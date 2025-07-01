@@ -1,0 +1,389 @@
+/* You can add global styles to this file, and also import other style files */
+
+// Variáveis de cores para tema claro
+:root {
+    --primary-color: #6200ea;
+    --primary-light: #9c47ff;
+    --primary-dark: #3700b3;
+    --secondary-color: #03dac6;
+    --background-color: #ffffff;
+    --surface-color: #f5f5f5;
+    --error-color: #b00020;
+    --text-primary: #000000;
+    --text-secondary: #666666;
+    --border-color: #e0e0e0;
+    --hover-color: rgba(98, 0, 234, 0.08);
+    --shadow-color: rgba(0, 0, 0, 0.1);
+}
+
+// Variáveis de cores para tema escuro
+.dark-theme {
+    --primary-color: #bb86fc;
+    --primary-light: #e7b9ff;
+    --primary-dark: #8858c8;
+    --secondary-color: #03dac6;
+    --background-color: #121212;
+    --surface-color: #1e1e1e;
+    --error-color: #cf6679;
+    --text-primary: #ffffff;
+    --text-secondary: #b3b3b3;
+    --border-color: #333333;
+    --hover-color: rgba(187, 134, 252, 0.08);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+}
+
+// Reset e estilos base
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+// Scrollbar customizada
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--surface-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}
+
+// Estilos para Material Design
+.mat-mdc-card {
+    background-color: var(--surface-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.mat-mdc-button {
+    color: var(--primary-color) !important;
+}
+
+.mat-mdc-raised-button.mat-primary {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.mat-mdc-fab.mat-primary {
+    background-color: var(--primary-color) !important;
+    color: white !important;
+}
+
+.mat-mdc-form-field {
+    .mat-mdc-form-field-outline {
+        color: var(--border-color) !important;
+    }
+    
+    .mat-mdc-form-field-label {
+        color: var(--text-secondary) !important;
+    }
+    
+    .mat-mdc-input-element {
+        color: var(--text-primary) !important;
+    }
+}
+
+.mat-mdc-menu-panel {
+    background-color: var(--surface-color) !important;
+}
+
+.mat-mdc-menu-item {
+    color: var(--text-primary) !important;
+    
+    &:hover {
+        background-color: var(--hover-color) !important;
+    }
+}
+
+.mat-mdc-snack-bar-container {
+    background-color: var(--surface-color) !important;
+    color: var(--text-primary) !important;
+}
+
+// Utilitários
+.text-center {
+    text-align: center;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-column {
+    flex-direction: column;
+}
+
+.flex-center {
+    align-items: center;
+    justify-content: center;
+}
+
+.flex-between {
+    justify-content: space-between;
+}
+
+.flex-wrap {
+    flex-wrap: wrap;
+}
+
+.gap-1 {
+    gap: 0.5rem;
+}
+
+.gap-2 {
+    gap: 1rem;
+}
+
+.gap-3 {
+    gap: 1.5rem;
+}
+
+.m-0 {
+    margin: 0;
+}
+
+.p-0 {
+    padding: 0;
+}
+
+.mt-1 {
+    margin-top: 0.5rem;
+}
+
+.mt-2 {
+    margin-top: 1rem;
+}
+
+.mb-1 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-2 {
+    margin-bottom: 1rem;
+}
+
+.p-1 {
+    padding: 0.5rem;
+}
+
+.p-2 {
+    padding: 1rem;
+}
+
+// Animações
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.3s ease-out;
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-out;
+}
+
+// Responsividade
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .mobile-only {
+        display: block;
+    }
+    
+    .desktop-only {
+        display: none;
+    }
+}
+
+// Estilos para elementos de loading
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    color: var(--text-secondary);
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+    
+    mat-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    h3 {
+        margin: 0 0 0.5rem 0;
+        font-weight: 500;
+    }
+    
+    p {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+}
+
+// Classes personalizadas
+
+.dark-form-field.mat-form-field {
+    --mdc-outlined-text-field-outline-color: #CCCCCC;
+    --mat-form-field-label-color: #CCCCCC;
+    color: #CCCCCC;
+}
+
+.dark-form-field input {
+    color: #CCCCCC;
+}
+
+.dark-form-field ::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.dark-button {
+    color: #CCCCCC !important;
+}
+
+.custom-form-field {
+    position: relative;
+    margin: 1rem 0;
+    display: flex;
+    flex-direction: column;
+
+    input {
+        padding: 1.25rem 0.75rem 0.5rem;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        outline: none;
+        font-size: 16px;
+        transition: border-color 0.3s, color 0.3s;
+        background-color: transparent;
+        color: #000;
+
+        &::placeholder {
+            color: #999;
+        }
+
+        &:focus {
+            border-color: #3f51b5; // azul "material"
+        }
+    }
+
+    .custom-label {
+        position: absolute;
+        left: 0.75rem;
+        top: 1rem;
+        font-size: 14px;
+        color: #777;
+        pointer-events: none;
+        transition: all 0.2s ease;
+    }
+
+    .floating {
+        top: 0.25rem;
+        font-size: 12px;
+        color: #3f51b5;
+    }
+
+    // Estilo escuro
+    &.dark-mode {
+        input {
+        border-color: #CCCCCC;
+        color: #CCCCCC;
+
+        &::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        &:focus {
+            border-color: #CCCCCC;
+        }
+        }
+
+        .custom-label {
+            color: #CCCCCC;
+        }
+
+        .floating {
+            color: #CCCCCC;
+        }
+    }
+}
+
+.custom-form-field.with-button {
+    position: relative;
+
+    .input-wrapper {
+        display: flex;
+        align-items: center;
+        position: relative;
+
+        input {
+            flex: 1;
+            padding: 1rem 1rem 1rem 1rem;
+        }
+
+        .icon-button {
+            position: absolute;
+            right: 0.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+    }
+}

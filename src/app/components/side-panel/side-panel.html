@@ -1,0 +1,174 @@
+<div class="side-panel" *ngIf="item">
+    <div class="side-panel-header">
+        <h3>{{ getItemName() }}</h3>
+        <button mat-icon-button (click)="onClose()">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <div class="side-panel-content" *ngIf="!loading; else loadingTemplate">
+        <!-- Canal -->
+        <div *ngIf="isChannel() && getChannelInfo() as channelInfo" class="channel-info">
+            <div class="channel-logo" *ngIf="getItemLogo()">
+                <img [src]="getItemLogo()" [alt]="getItemName()" (error)="onImageError($event)">
+            </div>
+
+            <!-- Programa Atual -->
+            <mat-card *ngIf="channelInfo.currentProgram" class="current-program">
+                <mat-card-header>
+                    <mat-card-title>Agora</mat-card-title>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <h4>{{ channelInfo.currentProgram.title }}</h4>
+                    <p *ngIf="channelInfo.currentProgram.description">{{ channelInfo.currentProgram.description }}</p>
+
+                    <div class="program-time">
+                        {{ formatTime(channelInfo.currentProgram.start) }} - {{ formatTime(channelInfo.currentProgram.stop) }}
+                    </div>
+
+                    <mat-chip-set *ngIf="channelInfo.currentProgram.category">
+                        <mat-chip>{{ channelInfo.currentProgram.category }}</mat-chip>
+                    </mat-chip-set>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Próximo Programa -->
+            <mat-card *ngIf="channelInfo.nextProgram" class="next-program">
+                <mat-card-header>
+                    <mat-card-title>A seguir</mat-card-title>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <h4>{{ channelInfo.nextProgram.title }}</h4>
+                    <p *ngIf="channelInfo.nextProgram.description">{{ channelInfo.nextProgram.description }}</p>
+
+                    <div class="program-time">
+                        {{ formatTime(channelInfo.nextProgram.start) }} - {{ formatTime(channelInfo.nextProgram.stop) }}
+                    </div>
+                </mat-card-content>
+            </mat-card>
+
+            <!-- Programação -->
+            <mat-card *ngIf="channelInfo.schedule && channelInfo.schedule.length > 0" class="schedule">
+                <mat-card-header>
+                    <mat-card-title>Programação</mat-card-title>
+                    <button mat-icon-button (click)="refreshEPG()" title="Atualizar EPG">
+                        <mat-icon>refresh</mat-icon>
+                    </button>
+                </mat-card-header>
+
+                <mat-card-content>
+                    <mat-list>
+                        <mat-list-item *ngFor="let program of channelInfo.schedule.slice(0, 5)">
+                            <div class="program-item">
+                                <div class="program-title">{{ program.title }}</div>
+                                <div class="program-time">{{ formatTime(program.start) }}</div>
+                            </div>
+                        </mat-list-item>
+                    </mat-list>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <!-- Filme -->
+        <div *ngIf="isMovie() && getMovieInfo() as movieInfo" class="movie-info">
+            <div class="movie-poster" *ngIf="movieInfo.poster">
+                <img [src]="movieInfo.poster" [alt]="movieInfo.title" (error)="onImageError($event)">
+            </div>
+
+            <mat-card class="movie-details">
+                <mat-card-content>
+                    <h4>{{ movieInfo.title }}</h4>
+                    <p *ngIf="movieInfo.overview" class="overview">{{ movieInfo.overview }}</p>
+                
+                    <div class="movie-meta">
+                        <div *ngIf="movieInfo.releaseDate" class="meta-item">
+                            <strong>Lançamento:</strong> {{ formatDate(movieInfo.releaseDate) }}
+                        </div>
+
+                        <div *ngIf="movieInfo.rating" class="meta-item">
+                            <strong>Avaliação:</strong> {{ formatRating(movieInfo.rating) }}/10
+                            <span *ngIf="movieInfo.voteCount">({{ movieInfo.voteCount }} votos)</span>
+                        </div>
+
+                        <div *ngIf="movieInfo.runtime" class="meta-item">
+                            <strong>Duração:</strong> {{ formatDuration(movieInfo.runtime) }}
+                        </div>
+
+                        <div *ngIf="movieInfo.language" class="meta-item">
+                            <strong>Idioma:</strong> {{ movieInfo.language.toUpperCase() }}
+                        </div>
+                    </div>
+
+                    <mat-chip-set *ngIf="movieInfo.genres && movieInfo.genres.length > 0">
+                        <mat-chip *ngFor="let genre of movieInfo.genres">{{ genre }}</mat-chip>
+                    </mat-chip-set>
+                </mat-card-content>
+            </mat-card>
+        </div>
+
+        <!-- Série -->
+        <div *ngIf="isSeries() && getSeriesInfo() as seriesInfo" class="series-info">
+            <div class="series-poster" *ngIf="seriesInfo.poster">
+                <img [src]="seriesInfo.poster" [alt]="seriesInfo.title" (error)="onImageError($event)">
+            </div>
+
+            <mat-card class="series-details">
+                <mat-card-content>
+                    <h4>{{ seriesInfo.title }}</h4>
+                    <p *ngIf="seriesInfo.overview" class="overview">{{ seriesInfo.overview }}</p>
+
+                    <div class="series-meta">
+                        <div *ngIf="seriesInfo.firstAirDate" class="meta-item">
+                            <strong>Estreia:</strong> {{ formatDate(seriesInfo.firstAirDate) }}
+                        </div>
+
+                        <div *ngIf="seriesInfo.rating" class="meta-item">
+                            <strong>Avaliação:</strong> {{ formatRating(seriesInfo.rating) }}/10
+                            <span *ngIf="seriesInfo.voteCount">({{ seriesInfo.voteCount }} votos)</span>
+                        </div>
+
+                        <div *ngIf="seriesInfo.numberOfSeasons" class="meta-item">
+                            <strong>Temporadas:</strong> {{ seriesInfo.numberOfSeasons }}
+                        </div>
+                        
+                        <div *ngIf="seriesInfo.numberOfEpisodes" class="meta-item">
+                            <strong>Episódios:</strong> {{ seriesInfo.numberOfEpisodes }}
+                        </div>
+
+                        <div *ngIf="seriesInfo.status" class="meta-item">
+                            <strong>Status:</strong> {{ seriesInfo.status }}
+                        </div>
+
+                        <div *ngIf="seriesInfo.language" class="meta-item">
+                            <strong>Idioma:</strong> {{ seriesInfo.language.toUpperCase() }}
+                        </div>
+                    </div>
+
+                    <mat-chip-set *ngIf="seriesInfo.genres && seriesInfo.genres.length > 0">
+                        <mat-chip *ngFor="let genre of seriesInfo.genres">{{ genre }}</mat-chip>
+                    </mat-chip-set>
+
+                    <mat-chip-set *ngIf="seriesInfo.networks && seriesInfo.networks.length > 0" class="networks">
+                        <mat-chip *ngFor="let network of seriesInfo.networks" color="accent">{{ network }}</mat-chip>
+                    </mat-chip-set>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
+
+    <ng-template #loadingTemplate>
+        <div class="loading-container">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Carregando informações...</p>
+        </div>
+    </ng-template>
+
+    <!-- Botão de Favorito -->
+    <div class="side-panel-actions">
+        <button mat-fab [color]="isFavorite ? 'warn' : 'primary'" (click)="toggleFavorite()" [title]="isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
+            <mat-icon>{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
+        </button>
+    </div>
+</div>

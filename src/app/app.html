@@ -1,0 +1,93 @@
+<div class="app-container" [class.dark-theme]="(themeService.isDarkMode$ | async)">
+    <!-- Header -->
+    <app-header 
+        [(searchTerm)]="searchTerm"
+        (themeToggle)="themeService.toggleTheme()">
+    </app-header>
+
+    <div class="main-content">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <!-- Navigation -->
+            <div class="nav-section">
+                <h3>NAVEGAÇÃO</h3>
+                <nav class="nav-menu">
+                    <a routerLink="/channels" routerLinkActive="active" class="nav-item" [class.disabled]="getChannelsCount() === 0">
+                        <mat-icon>tv</mat-icon>
+                        <span>Canais</span>
+                        <span class="count">{{ getChannelsCount() }}</span>
+                    </a>
+                    
+                    <a routerLink="/movies" routerLinkActive="active" class="nav-item" [class.disabled]="getMoviesCount() === 0">
+                        <mat-icon>movie</mat-icon>
+                        <span>Filmes</span>
+                        <span class="count">{{ getMoviesCount() }}</span>
+                    </a>
+                    
+                    <a routerLink="/series" routerLinkActive="active" class="nav-item" [class.disabled]="getSeriesCount() === 0">
+                        <mat-icon>tv_gen</mat-icon>
+                        <span>Séries</span>
+                        <span class="count">{{ getSeriesCount() }}</span>
+                    </a>
+                    
+                    <a routerLink="/favorites" routerLinkActive="active" class="nav-item" [class.disabled]="getFavoritesCount() === 0">
+                        <mat-icon>favorite</mat-icon>
+                        <span>Favoritos</span>
+                        <span class="count">{{ getFavoritesCount() }}</span>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Load M3U Section -->
+            <div class="load-section">
+                <h3>CARREGAR LISTA</h3>
+
+                <!-- URL Input -->
+                <div class="url-input" style="width: 100% !important;">
+                    <div class="custom-form-field with-button" [class.dark-mode]="themeService.isDarkMode$ | async">
+                        <div class="input-wrapper">
+                            <input type="text" [(ngModel)]="m3uUrl" placeholder="URL da Lista M3U" [disabled]="loading"/>
+                            <button mat-icon-button class="icon-button" color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="loadM3U()" [disabled]="loading || !m3uUrl.trim()" [title]="'Carregar lista M3U'">
+                                <mat-icon>{{ loading ? 'hourglass_empty' : 'download' }}</mat-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- File Upload -->
+                <div class="file-upload">
+                    <input type="file" #fileInput accept=".m3u,.m3u8" (change)="onFileSelected($event)" style="display: none;">
+
+                    <button mat-stroked-button color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="fileInput.click()" [disabled]="loading" class="upload-button">
+                        <mat-icon>upload_file</mat-icon>
+                        Carregar Arquivo
+                    </button>
+                </div>
+
+                <!-- Loading Indicator -->
+                <div class="loading-indicator" *ngIf="loading">
+                    <mat-progress-spinner diameter="30" mode="indeterminate"></mat-progress-spinner>
+                    <span>Carregando lista...</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Content -->
+        <div class="content-area">
+            <!-- Video Player -->
+            <div class="player-container" *ngIf="selectedItem">
+                <app-video-player [url]="selectedItem.url" [title]="getSelectedItemTitle()"></app-video-player>
+            </div>
+
+            <!-- Content List -->
+            <div class="list-container">
+                <router-outlet></router-outlet>
+            </div>
+        </div>
+
+        <!-- Right Sidebar - Info Panel -->
+        <div class="info-panel" [class.visible]="showInfoPanel">
+            <app-side-panel [item]="selectedItem" [itemType]="selectedItemType" (close)="closeInfoPanel()"></app-side-panel>
+        </div>
+    </div>
+</div>

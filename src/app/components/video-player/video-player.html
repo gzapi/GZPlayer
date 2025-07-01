@@ -1,0 +1,74 @@
+<div class="video-player-container">
+    <!-- Video Title -->
+    <div class="video-header" *ngIf="title">
+        <h3 class="video-title">{{ title }}</h3>
+    </div>
+
+    <!-- Video Element -->
+    <div class="video-wrapper">
+        <video
+            #videoElement
+            class="video-js vjs-default-skin"
+            data-setup="{}"
+            preload="auto"
+            [poster]="''"
+            [attr.data-title]="title">
+
+            <p class="vjs-no-js">
+                Para assistir este vídeo, você precisa habilitar JavaScript e considerar atualizar para um <a href="https://videojs.com/html5-video-support/" target="_blank">navegador que suporte HTML5 video</a>.
+            </p>
+        </video>
+
+        <!-- Loading Overlay -->
+        <div class="loading-overlay" *ngIf="isLoading">
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            <p>Carregando vídeo...</p>
+        </div>
+
+        <!-- Error Overlay -->
+        <div class="error-overlay" *ngIf="hasError">
+            <div class="error-content">
+                <mat-icon>error_outline</mat-icon>
+                <h4>Erro no Player</h4>
+                <p>{{ errorMessage }}</p>
+
+                <button mat-raised-button color="primary" (click)="retry()">
+                    <mat-icon>refresh</mat-icon>
+                    Tentar Novamente
+                </button>
+            </div>
+        </div>
+
+        <!-- No Video State -->
+        <div class="no-video-state" *ngIf="!url && !isLoading && !hasError">
+            <div class="no-video-content">
+                <mat-icon>play_circle_outline</mat-icon>
+                <h4>Nenhum vídeo selecionado</h4>
+                <p>Selecione um canal, filme ou série para começar a assistir</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Controls (opcional) -->
+    <div class="custom-controls" *ngIf="player && !hasError">
+        <div class="controls-left">
+            <button mat-icon-button (click)="play()" title="Reproduzir">
+                <mat-icon>play_arrow</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="pause()" title="Pausar">
+                <mat-icon>pause</mat-icon>
+            </button>
+
+            <button mat-icon-button (click)="stop()" title="Parar">
+                <mat-icon>stop</mat-icon>
+            </button>
+        </div>
+
+        <div class="controls-right">
+            <button mat-icon-button (click)="toggleFullscreen()" title="Tela Cheia">
+                <mat-icon>fullscreen</mat-icon>
+            </button>
+        </div>
+    </div>
+</div>

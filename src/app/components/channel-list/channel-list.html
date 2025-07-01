@@ -1,0 +1,56 @@
+<div class="channel-list-container">
+    <!-- Loading State -->
+    <div class="loading-container" *ngIf="loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <p>Carregando...</p>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!loading && filteredItems.length === 0">
+        <mat-icon>{{ getEmptyStateIcon() }}</mat-icon>
+        <h3>{{ getEmptyStateTitle() }}</h3>
+        <p>{{ getEmptyStateMessage() }}</p>
+    </div>
+
+    <!-- Items Grid -->
+    <div class="items-grid" *ngIf="!loading && filteredItems.length > 0">
+        <mat-card class="item-card" *ngFor="let item of filteredItems; trackBy: trackByFn"(click)="onItemClick(item)">        
+            <!-- Item Image -->
+            <div class="item-image">
+                <img [src]="getItemImage(item)" 
+                    [alt]="getItemTitle(item)"
+                    (error)="onImageError($event)">
+                
+                <!-- Favorite Button -->
+                <button mat-icon-button class="favorite-btn" [class.favorited]="isFavorite(item)" (click)="toggleFavorite(item, $event)" [title]="isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
+                    <mat-icon>{{ isFavorite(item) ? 'favorite' : 'favorite_border' }}</mat-icon>
+                </button>
+
+                <!-- Type Badge -->
+                <div class="type-badge">
+                    <mat-icon>{{ getTypeIcon(item) }}</mat-icon>
+                </div>
+            </div>
+
+            <!-- Item Content -->
+            <mat-card-content class="item-content">
+                <h3 class="item-title" [title]="getItemTitle(item)">
+                    {{ getItemTitle(item) }}
+                </h3>
+                
+                <p class="item-subtitle" *ngIf="getItemSubtitle(item)">
+                    {{ getItemSubtitle(item) }}
+                </p>
+
+                <!-- Additional Info -->
+                <div class="item-info" *ngIf="hasAdditionalInfo(item)">
+                    <mat-chip-set>
+                        <mat-chip *ngIf="getYear(item)">{{ getYear(item) }}</mat-chip>
+                        <mat-chip *ngIf="getDuration(item)">{{ getDuration(item) }}</mat-chip>
+                        <mat-chip *ngIf="getSeasons(item)">{{ getSeasons(item) }} temporadas</mat-chip>
+                    </mat-chip-set>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div>

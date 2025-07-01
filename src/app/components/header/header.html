@@ -1,0 +1,83 @@
+<mat-toolbar class="app-header">
+    <div class="header-content">
+        <!-- Logo e Título -->
+        <div class="logo-section">
+            <mat-icon class="app-icon">play_circle_filled</mat-icon>
+            <h1 class="app-title">GZ WebPlayer</h1>
+        </div>
+
+        <!-- Informações da Playlist -->
+        <div class="playlist-info" *ngIf="playlistStats">
+            <div class="stats">
+                <span class="stat-item">
+                    <mat-icon>tv</mat-icon>
+                    {{ playlistStats.channels }}
+                </span>
+
+                <span class="stat-item">
+                    <mat-icon>movie</mat-icon>
+                    {{ playlistStats.movies }}
+                </span>
+
+                <span class="stat-item">
+                    <mat-icon>tv_gen</mat-icon>
+                    {{ playlistStats.series }}
+                </span>
+
+                <span class="stat-item">
+                    <mat-icon>favorite</mat-icon>
+                    {{ favoritesCount }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="header-controls">
+            <!-- Busca -->
+            <mat-form-field appearance="outline" class="search-field">
+                <mat-label>Buscar...</mat-label>
+                <input matInput 
+                    [(ngModel)]="searchTerm" 
+                    (input)="onSearchInput()"
+                    placeholder="Digite para buscar">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <!-- Toggle de Tema -->
+            <button mat-icon-button (click)="toggleTheme()" [title]="isDarkMode ? 'Tema Claro' : 'Tema Escuro'">
+                <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+            </button>
+
+            <!-- Menu de Opções -->
+            <button mat-icon-button [matMenuTriggerFor]="optionsMenu" title="Opções">
+                <mat-icon>more_vert</mat-icon>
+            </button>
+
+            <mat-menu #optionsMenu="matMenu">
+                <button mat-menu-item (click)="clearFavorites()">
+                    <mat-icon>clear</mat-icon>
+                    <span>Limpar Favoritos</span>
+                </button>
+
+                <button mat-menu-item (click)="exportFavorites()">
+                    <mat-icon>download</mat-icon>
+                    <span>Exportar Favoritos</span>
+                </button>
+
+                <button mat-menu-item (click)="importFavorites()">
+                    <mat-icon>upload</mat-icon>
+                    <span>Importar Favoritos</span>
+                </button>
+
+                <mat-divider></mat-divider>
+                    <button mat-menu-item (click)="showAbout()">
+                    <mat-icon>info</mat-icon>
+                    <span>Sobre</span>
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+</mat-toolbar>
+
+<!-- Input oculto para importar favoritos -->
+<input #fileInput type="file" accept=".json" style="display: none" (change)="onFileSelected($event)">
