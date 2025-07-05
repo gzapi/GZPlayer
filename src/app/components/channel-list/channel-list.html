@@ -17,10 +17,8 @@
         <mat-card class="item-card" *ngFor="let item of filteredItems; trackBy: trackByFn"(click)="onItemClick(item)">        
             <!-- Item Image -->
             <div class="item-image">
-                <img [src]="getItemImage(item)" 
-                    [alt]="getItemTitle(item)"
-                    (error)="onImageError($event)">
-                
+                <img [src]="getItemImage(item)" loading="lazy" [alt]="getItemTitle(item)" (error)="onImageError($event)">
+
                 <!-- Favorite Button -->
                 <button mat-icon-button class="favorite-btn" [class.favorited]="isFavorite(item)" (click)="toggleFavorite(item, $event)" [title]="isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
                     <mat-icon>{{ isFavorite(item) ? 'favorite' : 'favorite_border' }}</mat-icon>

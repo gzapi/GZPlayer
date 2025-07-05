@@ -2,35 +2,45 @@
 
 // Variáveis de cores para tema claro
 :root {
-    --primary-color: #6200ea;
-    --primary-light: #9c47ff;
-    --primary-dark: #3700b3;
-    --secondary-color: #03dac6;
-    --background-color: #ffffff;
-    --surface-color: #f5f5f5;
-    --error-color: #b00020;
-    --text-primary: #000000;
-    --text-secondary: #666666;
-    --border-color: #e0e0e0;
-    --hover-color: rgba(98, 0, 234, 0.08);
-    --shadow-color: rgba(0, 0, 0, 0.1);
+    --primary-color: #e53935;          /* Azul suave e profissional */
+    --primary-light: #82b1f3;
+    --primary-dark: #1c6cd5;
+
+    --secondary-color: #50E3C2;        /* Verde água, vibrante mas leve */
+    
+    --background-color: #f9f9fb;       /* Quase branco, mais confortável para os olhos */
+    --surface-color: #ffffff;          /* Branco puro para cartões e elementos elevados */
+    
+    --error-color: #e53935;            /* Vermelho vivo e acessível */
+    
+    --text-primary: #212121;           /* Preto suave */
+    --text-secondary: #757575;         /* Cinza médio */
+    
+    --border-color: #dddfe2;           /* Cinza claro para contornos sutis */
+    --hover-color: rgba(74, 144, 226, 0.1); /* Tom do azul primário */
+    
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra suave */
 }
 
 // Variáveis de cores para tema escuro
 .dark-theme {
-    --primary-color: #bb86fc;
-    --primary-light: #e7b9ff;
-    --primary-dark: #8858c8;
-    --secondary-color: #03dac6;
-    --background-color: #121212;
-    --surface-color: #1e1e1e;
-    --error-color: #cf6679;
-    --text-primary: #ffffff;
-    --text-secondary: #b3b3b3;
-    --border-color: #333333;
-    --hover-color: rgba(187, 134, 252, 0.08);
-    --shadow-color: rgba(0, 0, 0, 0.3);
+    --primary-color: #4A90E2;           /* Azul suave, agradável aos olhos */
+    --primary-light: #b3cdff;
+    --primary-dark: #4d74c8;
+
+    --secondary-color: #c3e88d;         /* Verde suave e legível */
+    --background-color: #0f111a;        /* Fundo mais escuro e profundo */
+    --surface-color: #1c1f2b;           /* Cards e containers */
+    
+    --error-color: #f07178;             /* Vermelho rosado menos agressivo */
+    --text-primary: #dcdfe4;            /* Quase branco, mais suave */
+    --text-secondary: #9da5b4;          /* Cinza azulado suave */
+    
+    --border-color: #2b2f3a;
+    --hover-color: rgba(130, 170, 255, 0.08); /* Baseado no novo primary */
+    --shadow-color: rgba(0, 0, 0, 0.4);       /* Leve ajuste para profundidade */
 }
+
 
 // Reset e estilos base
 * {
@@ -386,4 +396,34 @@ html, body {
             z-index: 1;
         }
     }
+}
+
+// #### Login
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+
+    mat-card {
+        width: 100%;
+        max-width: 400px;
+        padding: 2rem;
+    }
+
+    .full-width {
+        width: 100%;
+    }
+
+    .error-message {
+        margin-top: 1rem;
+        color: var(--error-color);
+        font-size: 0.9rem;
+    }
+}
+
+.botao {
+    background-color: #ac302f !important;
+    color: #ffffff !important;
 }

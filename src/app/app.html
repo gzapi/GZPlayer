@@ -1,35 +1,55 @@
 <div class="app-container" [class.dark-theme]="(themeService.isDarkMode$ | async)">
     <!-- Header -->
-    <app-header 
-        [(searchTerm)]="searchTerm"
-        (themeToggle)="themeService.toggleTheme()">
-    </app-header>
+    <app-header  *ngIf="isLogedIn" [(searchTerm)]="searchTerm" (themeToggle)="themeService.toggleTheme()"></app-header>
 
     <div class="main-content">
         <!-- Left Sidebar -->
-        <div class="sidebar">
+        <div class="sidebar" *ngIf="isLogedIn">
             <!-- Navigation -->
             <div class="nav-section">
                 <h3>NAVEGAÇÃO</h3>
                 <nav class="nav-menu">
-                    <a routerLink="/channels" routerLinkActive="active" class="nav-item" [class.disabled]="getChannelsCount() === 0">
+
+                    <!-- Canais com submenu -->
+                    <div class="nav-item dropdown" (click)="toggleChannels()">
                         <mat-icon>tv</mat-icon>
                         <span>Canais</span>
                         <span class="count">{{ getChannelsCount() }}</span>
-                    </a>
-                    
-                    <a routerLink="/movies" routerLinkActive="active" class="nav-item" [class.disabled]="getMoviesCount() === 0">
+                        <mat-icon class="arrow-icon" *ngIf="getChannelsCount() > 0">{{ showChannels ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    </div>
+                    <ul class="sub-menu" *ngIf="showChannels && getChannelsCount() > 0">
+                        <li *ngFor="let channelGroup of sortedChannelGroups">
+                            <a [routerLink]="['/channels', channelGroup.key]">{{ channelGroup.key }} ({{ channelGroup.value.length }})</a>
+                        </li>
+                    </ul>
+
+                    <!-- Filmes com submenu -->
+                    <div class="nav-item dropdown" (click)="toggleMovies()">
                         <mat-icon>movie</mat-icon>
                         <span>Filmes</span>
                         <span class="count">{{ getMoviesCount() }}</span>
-                    </a>
-                    
-                    <a routerLink="/series" routerLinkActive="active" class="nav-item" [class.disabled]="getSeriesCount() === 0">
+                        <mat-icon class="arrow-icon" *ngIf="getMoviesCount() > 0">{{ showMovies ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    </div>
+                    <ul class="sub-menu" *ngIf="showMovies && getMoviesCount() > 0">
+                        <li *ngFor="let genre of sortedMovieGenres">
+                            <a [routerLink]="['/movies', genre.key]">{{ genre.key }} ({{ genre.value.length }})</a>
+                        </li>
+                    </ul>
+
+                    <!-- Séries com submenu -->
+                    <div class="nav-item dropdown" (click)="toggleSeries()">
                         <mat-icon>tv_gen</mat-icon>
                         <span>Séries</span>
                         <span class="count">{{ getSeriesCount() }}</span>
-                    </a>
-                    
+                        <mat-icon class="arrow-icon" *ngIf="getSeriesCount() > 0">{{ showSeries ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    </div>
+                    <ul class="sub-menu" *ngIf="showSeries && getSeriesCount() > 0">
+                        <li *ngFor="let seriesGroup of sortedSeriesGroups">
+                            <a [routerLink]="['/series', seriesGroup.key]">{{ seriesGroup.key }} ({{ seriesGroup.value.length }})</a>
+                        </li>
+                    </ul>
+
+                    <!-- Favoritos -->
                     <a routerLink="/favorites" routerLinkActive="active" class="nav-item" [class.disabled]="getFavoritesCount() === 0">
                         <mat-icon>favorite</mat-icon>
                         <span>Favoritos</span>
@@ -47,7 +67,7 @@
                     <div class="custom-form-field with-button" [class.dark-mode]="themeService.isDarkMode$ | async">
                         <div class="input-wrapper">
                             <input type="text" [(ngModel)]="m3uUrl" placeholder="URL da Lista M3U" [disabled]="loading"/>
-                            <button mat-icon-button class="icon-button" color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="loadM3U()" [disabled]="loading || !m3uUrl.trim()" [title]="'Carregar lista M3U'">
+                            <button mat-icon-button class="icon-button" color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="loadM3U({})" [disabled]="loading || !m3uUrl.trim()" [title]="'Carregar lista M3U'">
                                 <mat-icon>{{ loading ? 'hourglass_empty' : 'download' }}</mat-icon>
                             </button>
                         </div>

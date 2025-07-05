@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { Channel, Movie, Series, M3UPlaylist } from '../../models/interfaces';
 import { FavoritesService } from '../../services/favorites';
 import { AppComponent } from '../../app';
+import { environment } from '../../../environments/environment';
 
 @Component({
     selector: 'app-channel-list',
@@ -30,12 +31,13 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     @Input() playlist: M3UPlaylist | null = null;
     @Input() searchTerm = '';
     @Input() currentView: 'channels' | 'movies' | 'series' | 'favorites' = 'channels';
-    
+
     @Output() itemSelected = new EventEmitter<{item: Channel | Movie | Series, type: 'channel' | 'movie' | 'series'}>();
 
     filteredItems: (Channel | Movie | Series)[] = [];
     loading = false;
     currentRoute = '';
+    currentType  = '';
 
     private destroy$ = new Subject<void>();
 
@@ -49,6 +51,7 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     ngOnInit(): void {
         // Detectar rota atual
         this.currentRoute = this.router.url.split('/')[1] || 'channels';
+        this.currentType  = this.router.url.split('/')[2] || '';
 
         // Obter dados da playlist do componente pai
         this.playlist = this.appComponent.playlistData;
@@ -101,22 +104,20 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     getItemName(item: Channel | Movie | Series): string {
-        return 'name' in item ? item.name : item.title;
+        return item.title;
     }
 
     getItemImage(item: Channel | Movie | Series): string {
-        if ('logo' in item) {
-            return item.logo || 'https://via.placeholder.com/300x200?text=Canal';
-        } else if ('poster' in item) {
-            return item.poster || 'https://via.placeholder.com/300x450?text=Poster';
+        if (item.tvg_logo) {
+            return environment.API_URL + item.tvg_logo;
         }
 
-        return 'https://via.placeholder.com/300x200?text=Item';
+        return '/assets/default.webp';
     }
 
     getItemSubtitle(item: Channel | Movie | Series): string {
         if ('group' in item) {
-            return item.group || 'Canal';
+            return item.item_type || 'Canal';
         } else if ('genre' in item) {
             return item.genre || 'Sem gênero';
         }
@@ -125,19 +126,20 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private getItemType(item: Channel | Movie | Series): 'channel' | 'movie' | 'series' {
-        if ('tvgId' in item) {
+        if (item.item_type === 'channel') {
             return 'channel';
-        }
-
-        if ('poster' in item && 'genre' in item) {
-            // Distinguir entre filme e série baseado na presença de 'seasons'
-            return 'seasons' in item ? 'series' : 'movie';
+        } else if (item.item_type === 'movie') {
+            return 'movie';
+        } else if (item.item_type === 'series') {
+            return 'series';
         }
 
         return 'channel';
     }
 
     private updateFilteredItems(): void {
+        this.currentType  = this.router.url.split('/')[2] || '';
+
         if (!this.playlist) {
             this.filteredItems = [];
             return;
@@ -163,13 +165,18 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
                 items = [...this.playlist.channels];
         }
 
+        // Filtrar por subtipo, se definido
+        if (this.currentType) {
+            items = items.filter(item => item.item_subtype === this.currentType);
+        }
+
         // Aplicar filtro de busca
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
 
             items = items.filter(item => {
-                const name = 'name' in item ? item.name : item.title;
-                const group = 'group' in item ? item.group : ('genre' in item ? item.genre : '');
+                const name = item.title;
+                const group = item.genre;
                 return name.toLowerCase().includes(term) || (group && group.toLowerCase().includes(term));
             });
         }
@@ -210,7 +217,7 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
 
     onImageError(event: Event): void {
         const img = event.target as HTMLImageElement;
-        img.src = 'https://via.placeholder.com/300x200?text=Sem+Imagem';
+        img.src = '/assets/default.webp';
     }
 
     getItemTitle(item: Channel | Movie | Series): string {

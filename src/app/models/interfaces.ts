@@ -1,62 +1,68 @@
 export interface Channel {
-  id: string;
-  name: string;
-  url: string;
-  logo?: string;
-  group?: string;
-  tvgId?: string;
-  tvgName?: string;
-  tvgLogo?: string;
-  groupTitle?: string;
-  isFavorite?: boolean;
+    id: string;
+    title: string;
+    url: string;
+    tvg_logo?: string;
+    year?: number;
+    genre?: string;
+    duration?: string;
+    synopsis?: string;
+    isFavorite?: boolean;
+    item_type?: string;
+    item_subtype?: string;
 }
 
 export interface Movie {
-  id: string;
-  title: string;
-  url: string;
-  poster?: string;
-  year?: number;
-  genre?: string;
-  duration?: string;
-  synopsis?: string;
-  isFavorite?: boolean;
+    id: string;
+    title: string;
+    url: string;
+    tvg_logo?: string;
+    year?: number;
+    genre?: string;
+    duration?: string;
+    synopsis?: string;
+    isFavorite?: boolean;
+    item_type?: string;
+    item_subtype?: string;
 }
 
 export interface Series {
-  id: string;
-  title: string;
-  url: string;
-  poster?: string;
-  year?: number;
-  genre?: string;
-  seasons?: number;
-  synopsis?: string;
-  isFavorite?: boolean;
+    id: string;
+    title: string;
+    url: string;
+    tvg_logo?: string;
+    year?: number;
+    genre?: string;
+    duration?: string;
+    synopsis?: string;
+    isFavorite?: boolean;
+    item_type?: string;
+    item_subtype?: string;
+    seasons?: number;
 }
 
 export interface ProgramInfo {
-  title: string;
-  description?: string;
-  startTime?: string;
-  endTime?: string;
-  image?: string;
+    title: string;
+    description?: string;
+    startTime?: string;
+    endTime?: string;
+    image?: string;
 }
 
 export interface M3UPlaylist {
-  channels: Channel[];
-  movies: Movie[];
-  series: Series[];
+    channels: Channel[];
+    movies: Movie[];
+    series: Series[];
 }
 
 export interface Theme {
-  name: string;
-  isDark: boolean;
+    name: string;
+    isDark: boolean;
 }
 
 export interface FavoriteItem {
-  id: string;
-  type: 'channel' | 'movie' | 'series';
-  data: Channel | Movie | Series;
+    id: string;
+    type: 'channel' | 'movie' | 'series';
+    data: Channel | Movie | Series;
 }
 

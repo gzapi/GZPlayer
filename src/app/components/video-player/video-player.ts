@@ -107,7 +107,7 @@ export class VideoPlayerComponent implements OnInit, OnDestroy, AfterViewInit {
             });
 
             this.player.on('ended', () => {
-                console.log('Video ended');
+                console.info('Video ended');
             });
 
             // Carregar vídeo se URL estiver disponível

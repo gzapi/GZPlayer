@@ -137,7 +137,7 @@ export class ApiInterceptor implements HttpInterceptor {
 ```typescript
 // Se você tiver controle do backend
 app.use(cors({
-  origin: ['http://localhost:4200', 'https://seu-dominio.com'],
+  origin: ['http://localhost:5000', 'https://seu-dominio.com'],
   credentials: true
 }));
 ```

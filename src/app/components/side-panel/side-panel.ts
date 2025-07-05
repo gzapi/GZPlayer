@@ -109,15 +109,15 @@ export class SidePanelComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     isChannel(): boolean {
-        return this.item ? 'url' in this.item && this.item.url.includes('m3u8') : false;
+        return this.item ? this.item.item_type === 'channel' : false;
     }
 
     isMovie(): boolean {
-        return this.item ? 'duration' in this.item : false;
+        return this.item ? this.item.item_type === 'movie' : false;
     }
 
     isSeries(): boolean {
-        return this.item ? 'seasons' in this.item : false;
+        return  this.item ? this.item.item_type === 'series' : false;
     }
 
     getChannelInfo(): ChannelInfo | null {
@@ -161,7 +161,7 @@ export class SidePanelComponent implements OnInit, OnDestroy, OnChanges {
 
     onImageError(event: Event): void {
         const img = event.target as HTMLImageElement;
-        img.src = 'https://via.placeholder.com/300x450?text=Sem+Imagem';
+        img.src = '/assets/default.webp';
     }
 
     refreshEPG(): void {

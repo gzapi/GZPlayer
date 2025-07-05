@@ -9,7 +9,7 @@ import { Channel, Movie, Series } from '../models/interfaces';
 export interface ChannelInfo {
     id: string;
     name: string;
-    logo?: string;
+    tvg_logo?: string;
     currentProgram?: EPGProgram;
     nextProgram?: EPGProgram;
     schedule?: EPGProgram[];
@@ -19,7 +19,7 @@ export interface ChannelInfo {
 export interface MovieInfo {
     title: string;
     overview?: string;
-    poster?: string;
+    tvg_logo?: string;
     backdrop?: string;
     releaseDate?: string;
     rating?: number;
@@ -38,7 +38,7 @@ export interface MovieInfo {
 export interface SeriesInfo {
     title: string;
     overview?: string;
-    poster?: string;
+    tvg_logo?: string;
     backdrop?: string;
     firstAirDate?: string;
     rating?: number;
@@ -67,7 +67,7 @@ export class ChannelInfoService {
     ) {}
 
     getChannelInfo(channel: Channel): Observable<ChannelInfo> {
-        const epgChannelId = this.epgService.mapChannelToEPG(channel.name);
+        const epgChannelId = this.epgService.mapChannelToEPG(channel.title);
         
         return combineLatest([
             this.epgService.getCurrentProgram(epgChannelId),
@@ -76,8 +76,8 @@ export class ChannelInfoService {
         ]).pipe(
             map(([currentProgram, nextProgram, schedule]) => ({
                 id: channel.id,
-                name: channel.name,
-                logo: channel.logo,
+                name: channel.title,
+                logo: channel.tvg_logo,
                 currentProgram: currentProgram || undefined,
                 nextProgram: nextProgram || undefined,
                 schedule: schedule.slice(0, 10), // Próximos 10 programas
@@ -87,8 +87,8 @@ export class ChannelInfoService {
                 console.error('Erro ao buscar informações do canal:', error);
                 return of({
                     id: channel.id,
-                    name: channel.name,
-                    logo: channel.logo,
+                    name: channel.title,
+                    logo: channel.tvg_logo,
                     currentProgram: this.generateMockProgram('Programa Atual'),
                     nextProgram: this.generateMockProgram('Próximo Programa'),
                     schedule: [
@@ -195,7 +195,7 @@ export class ChannelInfoService {
         return {
             title: movie.title,
             overview: 'Filme emocionante com uma história cativante que prende a atenção do público do início ao fim.',
-            poster: 'https://via.placeholder.com/500x750?text=' + encodeURIComponent(movie.title),
+            tvg_logo: 'https://via.placeholder.com/500x750?text=' + encodeURIComponent(movie.title),
             backdrop: 'https://via.placeholder.com/1280x720?text=' + encodeURIComponent(movie.title),
             releaseDate: '2023-01-01',
             rating: 7.5,
@@ -212,7 +212,7 @@ export class ChannelInfoService {
         return {
             title: series.title,
             overview: 'Série envolvente com personagens complexos e uma narrativa que evolui ao longo das temporadas.',
-            poster: 'https://via.placeholder.com/500x750?text=' + encodeURIComponent(series.title),
+            tvg_logo: 'https://via.placeholder.com/500x750?text=' + encodeURIComponent(series.title),
             backdrop: 'https://via.placeholder.com/1280x720?text=' + encodeURIComponent(series.title),
             firstAirDate: '2023-01-01',
             rating: 8.2,

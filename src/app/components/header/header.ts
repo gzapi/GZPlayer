@@ -14,6 +14,8 @@ import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
 import { ThemeService } from '../../services/theme';
 import { FavoritesService } from '../../services/favorites';
 import { M3UPlaylist } from '../../models/interfaces';
+import { AuthService } from '../../auth/auth.service';
+import { Router } from '@angular/router';
 
 interface PlaylistStats {
     channels: number;
@@ -57,7 +59,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     constructor(
         private themeService: ThemeService,
         private favoritesService: FavoritesService,
-        private snackBar: MatSnackBar
+        private snackBar: MatSnackBar,
+        private authService: AuthService
     ) {}
 
     ngOnInit(): void {
@@ -203,6 +206,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
             duration: 10000,
             panelClass: 'about-snackbar'
         });
+    }
+
+    logout(): void {
+        this.authService.logout();
     }
 
     private updatePlaylistStats(): void {

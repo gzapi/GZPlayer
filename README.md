@@ -82,7 +82,7 @@ src/
 
 1. **Iniciar a aplicação**:
    ```bash
-   ng serve --host 0.0.0.0 --port 4200
+   ng serve --host 0.0.0.0 --port 5000
    ```
 
 2. **Carregar lista M3U**:

@@ -1,0 +1,34 @@
+<div class="login-container" style="width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; 
+    background: url(/assets/background.webp) no-repeat center center fixed; background-size: cover;"
+>
+    <mat-card style="background-color: white !important;">
+        <mat-card-title>GZ Player</mat-card-title>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <mat-form-field appearance="fill" class="full-width">
+                <mat-label>E-mail</mat-label>
+                <input matInput formControlName="login" type="email" required />
+                <mat-error *ngIf="loginForm.get('login')?.hasError('required')">E-mail é obrigatório</mat-error>
+                <mat-error *ngIf="loginForm.get('login')?.hasError('email')">E-mail inválido</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="fill" class="full-width">
+                <mat-label>Senha</mat-label>
+                <input matInput formControlName="password" [type]="hidePassword ? 'password' : 'text'" required />
+                <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" [attr.aria-label]="'Mostrar senha'">
+                    <mat-icon>{{ hidePassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+                </button>
+                <mat-error *ngIf="loginForm.get('password')?.hasError('required')">Senha é obrigatória</mat-error>
+                <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">Mínimo de 6 caracteres</mat-error>
+            </mat-form-field>
+
+            <button mat-raised-button class="botao full-width" [disabled]="loading || loginForm.invalid">
+                {{ loading ? 'Aguarde...' : 'Entrar' }}
+            </button>
+
+            <mat-error *ngIf="errorMessage" class="error-message">
+                {{ errorMessage }}
+            </mat-error>
+        </form>
+    </mat-card>
+</div>

@@ -73,8 +73,8 @@
 
         <!-- Filme -->
         <div *ngIf="isMovie() && getMovieInfo() as movieInfo" class="movie-info">
-            <div class="movie-poster" *ngIf="movieInfo.poster">
-                <img [src]="movieInfo.poster" [alt]="movieInfo.title" (error)="onImageError($event)">
+            <div class="movie-poster" *ngIf="movieInfo.tvg_logo">
+                <img [src]="movieInfo.tvg_logo" [alt]="movieInfo.title" (error)="onImageError($event)">
             </div>
 
             <mat-card class="movie-details">
@@ -110,8 +110,8 @@
 
         <!-- Série -->
         <div *ngIf="isSeries() && getSeriesInfo() as seriesInfo" class="series-info">
-            <div class="series-poster" *ngIf="seriesInfo.poster">
-                <img [src]="seriesInfo.poster" [alt]="seriesInfo.title" (error)="onImageError($event)">
+            <div class="series-poster" *ngIf="seriesInfo.tvg_logo">
+                <img [src]="seriesInfo.tvg_logo" [alt]="seriesInfo.title" (error)="onImageError($event)">
             </div>
 
             <mat-card class="series-details">
