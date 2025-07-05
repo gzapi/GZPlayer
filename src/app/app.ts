@@ -16,7 +16,6 @@ import { HeaderComponent } from './components/header/header';
 import { VideoPlayerComponent } from './components/video-player/video-player';
 import { SidePanelComponent } from './components/side-panel/side-panel';
 
-import { M3uParserService } from './services/m3u-parser';
 import { FavoritesService } from './services/favorites';
 import { ThemeService } from './services/theme';
 
@@ -24,6 +23,8 @@ import { Channel, Movie, Series, M3UPlaylist } from './models/interfaces';
 import { Functions } from '../functions';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth/auth.service';
+import { ImportList } from './components/import-list/import-list';
+import { MatDialog } from '@angular/material/dialog';
 
 interface LoadStatus {
     type: 'success' | 'error' | 'warning';
@@ -33,6 +34,8 @@ interface LoadStatus {
 
 interface GroupedItems<T> {
     key: string;
+    originalKey: string;
+    displayName: string;
     value: T[];
 }
 
@@ -99,10 +102,8 @@ export class AppComponent implements OnInit, OnDestroy {
     currentView: 'channels' | 'movies' | 'series' | 'favorites' = 'channels';
 
     // Controle de performance e progresso
-    private isInitialLoad = true;
     private readonly BATCH_SIZE = 100;
-    private readonly PROCESSING_DELAY = 16; // ~60fps
-    private readonly IMAGE_PRELOAD_COUNT = 10;
+    private readonly PROCESSING_DELAY = 16;
     
     // Cache para otimizações
     private _cachedCounts: {
@@ -125,7 +126,6 @@ export class AppComponent implements OnInit, OnDestroy {
     private processingAbortController?: AbortController;
 
     constructor(
-        private m3uParser: M3uParserService,
         private favoritesService: FavoritesService,
         public themeService: ThemeService,
         private router: Router,
@@ -133,7 +133,8 @@ export class AppComponent implements OnInit, OnDestroy {
         public functions: Functions,
         private authService: AuthService,
         private fb: FormBuilder,
-        private cdr: ChangeDetectorRef
+        private cdr: ChangeDetectorRef,
+        private dialog: MatDialog
     ) {
         this.authService.isLoggedIn$.subscribe(isLoggedIn => {
             this.isLogedIn = isLoggedIn;
@@ -154,6 +155,29 @@ export class AppComponent implements OnInit, OnDestroy {
         this.setupRouteListener();
         this.setupFavoritesListener();
         this.loadSavedM3UUrl();
+
+        setTimeout(() => {
+            this.expandMenu();
+        }, 500);
+    }
+
+    expandMenu() {
+        // Se a rota contém um submenu, expandir o menu pai
+        const currentUrl = this.router.url;
+
+        if (currentUrl.includes('/channels/') && currentUrl.split('/').length > 2) {
+            this.showChannels = true;
+        }
+
+        if (currentUrl.includes('/movies/') && currentUrl.split('/').length > 2) {
+            this.showMovies = true;
+        }
+
+        if (currentUrl.includes('/series/') && currentUrl.split('/').length > 2) {
+            this.showSeries = true;
+        }
+
+        this.cdr.markForCheck();
     }
 
     ngOnDestroy(): void {
@@ -233,7 +257,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
             if (result?.success) {
                 const items = result.data as any[];
-console.log(items);
+
                 if (this.processingAbortController?.signal.aborted) {
                     return;
                 }
@@ -403,10 +427,15 @@ console.log(items);
      */
     private sortGroupedItems<T>(groupedItems: Record<string, T[]>): GroupedItems<T>[] {
         return Object.entries(groupedItems)
-            .map(([key, value]) => ({ key, value }))
+            .map(([originalKey, value]) => ({ 
+                key: this.functions.sanitizeKey(originalKey), 
+                originalKey: originalKey, // Mantém a chave original
+                displayName: originalKey,
+                value 
+            }))
             .sort((a, b) => {
                 const countDiff = b.value.length - a.value.length;
-                return countDiff !== 0 ? countDiff : a.key.localeCompare(b.key);
+                return countDiff !== 0 ? countDiff : a.displayName.localeCompare(b.displayName);
             });
     }
 
@@ -434,6 +463,29 @@ console.log(items);
         for (let i = 0; i < items.length; i++) {
             items[i].isFavorite = this.favoritesService.isFavorite(items[i].id, type);
         }
+    }
+
+    public importM3U(): void {
+        const dialogRef = this.dialog.open(ImportList, {
+            width: '400px',
+            data: {
+                title: 'Confirmar Ação',
+                content: 'Tem certeza que deseja continuar?',
+                confirmText: 'Sim',
+                cancelText: 'Não'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            this.snackBar.open(result.message, 'Fechar');
+
+            if (result) {
+                console.log('Usuário confirmou');
+                this.loadM3U({});
+            } else {
+                console.log('Usuário cancelou');
+            }
+        });
     }
 
     /**
@@ -521,64 +573,6 @@ console.log(items);
     }
 
     /**
-     * Manipulação de arquivos otimizada
-     */
-    onFileSelected(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const file = input.files?.[0];
-
-        if (!file) return;
-
-        if (!file.name.toLowerCase().endsWith('.m3u') && !file.name.toLowerCase().endsWith('.m3u8')) {
-            this.showSnackBar('Por favor, selecione um arquivo .m3u ou .m3u8', 'error');
-            return;
-        }
-
-        this.loading = true;
-        this.loadStatus = null;
-        this.cdr.markForCheck();
-
-        this.m3uParser.parseM3UFromFile(file).pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: () => {
-                    this.uploadM3U(file);
-                    this.m3uUrl = file.name;
-                },
-                error: (error) => {
-                    this.handleLoadError(error);
-                }
-            });
-
-        input.value = '';
-    }
-
-    /**
-     * Upload otimizado de arquivo M3U
-     */
-    async uploadM3U(file: File): Promise<void> {
-        try {
-            const formData = new FormData();
-            formData.append('playlist', file);
-
-            const data = await this.functions.formPostExpress(formData, 'api/upload', true);
-
-            if (data?.success === true) {
-                this.snackBar.open('M3U enviado com sucesso', 'OK', { duration: 3000 });
-                await this.loadM3U({});
-            } else {
-                console.error('Erro ao enviar M3U para o servidor:', data);
-                this.snackBar.open('Erro ao enviar M3U para o servidor', 'OK', { duration: 5000 });
-            }
-        } catch (error) {
-            console.error('Erro ao enviar M3U para o servidor:', error);
-            this.snackBar.open('Erro ao enviar M3U para o servidor', 'OK', { duration: 5000 });
-        } finally {
-            this.loading = false;
-            this.cdr.markForCheck();
-        }
-    }
-
-    /**
      * Manipulação de itens da interface
      */
     selectItem(item: Channel | Movie | Series, type: 'channel' | 'movie' | 'series'): void {
@@ -638,6 +632,14 @@ console.log(items);
         return this.currentPlaylist;
     }
 
+    isChannelsActive(): boolean {
+        return this.router.url.startsWith('/channels');
+    }
+
+    isRouteActive(route: string): boolean {
+        return this.router.url === route;
+    }
+
     getSelectedItemTitle(): string {
         if (!this.selectedItem) return '';
         return this.selectedItem.title;
@@ -670,15 +672,6 @@ console.log(items);
     /**
      * Métodos auxiliares privados
      */
-    private handleLoadError(error: any): void {
-        this.loading = false;
-        console.error('Erro ao carregar M3U:', error);
-
-        const errorMessage = error.message || 'Erro ao carregar a lista. Verifique a URL/arquivo e tente novamente.';
-        this.showSnackBar(errorMessage, 'error');
-        this.cdr.markForCheck();
-    }
-
     private showSnackBar(message: string, type: 'success' | 'error' | 'warning'): void {
         const config = {
             duration: type === 'error' ? 6000 : 4000,

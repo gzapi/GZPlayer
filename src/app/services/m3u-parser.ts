@@ -37,12 +37,12 @@ export class M3uParserService {
 
             reader.onload = (e) => {
                 try {
-                const content = e.target?.result as string;
-                const playlist = this.parseM3UContent(content);
-                observer.next(playlist);
-                observer.complete();
+                    const content = e.target?.result as string;
+                    const playlist = this.parseM3UContent(content);
+                    observer.next(playlist);
+                    observer.complete();
                 } catch (error) {
-                observer.error(error);
+                    observer.error(error);
                 }
             };
 

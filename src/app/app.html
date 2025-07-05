@@ -7,21 +7,22 @@
         <div class="sidebar" *ngIf="isLogedIn">
             <!-- Navigation -->
             <div class="nav-section">
-                <h3>NAVEGAÇÃO</h3>
                 <nav class="nav-menu">
-
                     <!-- Canais com submenu -->
-                    <div class="nav-item dropdown" (click)="toggleChannels()">
+                    <div class="nav-item dropdown" (click)="toggleChannels()" [class.active]="isChannelsActive()">
                         <mat-icon>tv</mat-icon>
                         <span>Canais</span>
                         <span class="count">{{ getChannelsCount() }}</span>
                         <mat-icon class="arrow-icon" *ngIf="getChannelsCount() > 0">{{ showChannels ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </div>
-                    <ul class="sub-menu" *ngIf="showChannels && getChannelsCount() > 0">
-                        <li *ngFor="let channelGroup of sortedChannelGroups">
-                            <a [routerLink]="['/channels', channelGroup.key]">{{ channelGroup.key }} ({{ channelGroup.value.length }})</a>
-                        </li>
-                    </ul>
+                        <ul class="sub-menu" *ngIf="showChannels && getChannelsCount() > 0">
+                            <li *ngFor="let channelGroup of sortedChannelGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                                <a [routerLink]="['/channels', channelGroup.key]" [class.active]="isRouteActive('/channels/' + channelGroup.key)">
+                                    <mat-icon *ngIf="isRouteActive('/channels/' + channelGroup.key)" class="icon-16">chevron_right</mat-icon>
+                                    {{ channelGroup.displayName }} ({{ channelGroup.value.length }})
+                                </a>
+                            </li>
+                        </ul>
 
                     <!-- Filmes com submenu -->
                     <div class="nav-item dropdown" (click)="toggleMovies()">
@@ -30,11 +31,11 @@
                         <span class="count">{{ getMoviesCount() }}</span>
                         <mat-icon class="arrow-icon" *ngIf="getMoviesCount() > 0">{{ showMovies ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </div>
-                    <ul class="sub-menu" *ngIf="showMovies && getMoviesCount() > 0">
-                        <li *ngFor="let genre of sortedMovieGenres">
-                            <a [routerLink]="['/movies', genre.key]">{{ genre.key }} ({{ genre.value.length }})</a>
-                        </li>
-                    </ul>
+                        <ul class="sub-menu" *ngIf="showMovies && getMoviesCount() > 0">
+                            <li *ngFor="let genre of sortedMovieGenres" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                                <a [routerLink]="['/movies', genre.key]">{{ genre.key }} ({{ genre.value.length }})</a>
+                            </li>
+                        </ul>
 
                     <!-- Séries com submenu -->
                     <div class="nav-item dropdown" (click)="toggleSeries()">
@@ -43,11 +44,11 @@
                         <span class="count">{{ getSeriesCount() }}</span>
                         <mat-icon class="arrow-icon" *ngIf="getSeriesCount() > 0">{{ showSeries ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </div>
-                    <ul class="sub-menu" *ngIf="showSeries && getSeriesCount() > 0">
-                        <li *ngFor="let seriesGroup of sortedSeriesGroups">
-                            <a [routerLink]="['/series', seriesGroup.key]">{{ seriesGroup.key }} ({{ seriesGroup.value.length }})</a>
-                        </li>
-                    </ul>
+                        <ul class="sub-menu" *ngIf="showSeries && getSeriesCount() > 0">
+                            <li *ngFor="let seriesGroup of sortedSeriesGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                                <a [routerLink]="['/series', seriesGroup.key]">{{ seriesGroup.key }} ({{ seriesGroup.value.length }})</a>
+                            </li>
+                        </ul>
 
                     <!-- Favoritos -->
                     <a routerLink="/favorites" routerLinkActive="active" class="nav-item" [class.disabled]="getFavoritesCount() === 0">
@@ -76,9 +77,7 @@
 
                 <!-- File Upload -->
                 <div class="file-upload">
-                    <input type="file" #fileInput accept=".m3u,.m3u8" (change)="onFileSelected($event)" style="display: none;">
-
-                    <button mat-stroked-button color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="fileInput.click()" [disabled]="loading" class="upload-button">
+                    <button mat-stroked-button color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="importM3U()" [disabled]="loading" class="upload-button">
                         <mat-icon>upload_file</mat-icon>
                         Carregar Arquivo
                     </button>

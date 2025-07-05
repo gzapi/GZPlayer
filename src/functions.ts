@@ -71,4 +71,14 @@ export class Functions {
             return null;
         }
     }
+
+    sanitizeKey(title: string): string {
+        return title
+            .normalize('NFD') // Normaliza caracteres acentuados
+            .replace(/[\u0300-\u036f]/g, '') // Remove diacríticos (acentos)
+            .toLowerCase() // Converte para minúsculo
+            .replace(/[^a-z0-9\s]/g, '') // Remove caracteres especiais, mantém apenas letras, números e espaços
+            .trim() // Remove espaços no início e fim
+            .replace(/\s+/g, '_'); // Substitui espaços por underscore
+    }
 }

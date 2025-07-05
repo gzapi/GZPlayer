@@ -1,0 +1,53 @@
+<div class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h2>Carregar Lista M3U</h2>
+
+            <button class="close-button" (click)="closeModal()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Upload Section -->
+            <div class="upload-section" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
+                <div class="upload-area" (click)="fileInput.click()" [class.drag-over]="isDragOver">
+                    <div class="upload-icon">
+                        <span class="material-icons">cloud_upload</span>
+                    </div>
+                    <div class="upload-text">
+                        <h3>Arraste seu arquivo aqui</h3>
+                        <p>ou clique para selecionar um arquivo M3U</p>
+
+                        <button class="upload-button" type="button">
+                            <span class="material-icons">upload_file</span>
+                            Selecionar Arquivo
+                        </button>
+
+                        <p *ngIf="fileName" style="margin-top: 10px; margin-bottom: -25px;">Enviando Arquivo: {{ fileName }}</p>
+                    </div>
+                </div>
+
+                <input type="file" #fileInput accept=".m3u,.m3u8" (change)="onFileSelected($event)" style="display: none"/>
+            </div>
+
+            <!-- Loading Section -->
+            <div class="loading" *ngIf="isLoading">
+                <div class="spinner"></div>
+                <p>Processando arquivo...</p>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeModal()">
+                <span class="material-icons">close</span>
+                Cancelar
+            </button>
+
+            <button class="btn btn-primary" [disabled]="!parsedData" (click)="confirmUpload()">
+                <span class="material-icons">check</span>
+                Carregar Playlist
+            </button>
+        </div>
+    </div>
+</div>

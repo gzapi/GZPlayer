@@ -12,6 +12,13 @@
     overflow: hidden;
 }
 
+.icon-16 {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+}
+
 .sidebar {
     width: 280px;
     background: var(--surface-color);
@@ -50,11 +57,11 @@
             cursor: pointer;
 
             &:hover:not(.disabled) {
-                background: var(--hover-color);
+                background: var(--text-secondary);
             }
 
             &.active {
-                background: var(--primary-color);
+                background: var(--text-secondary);
                 color: white;
             }
 
@@ -120,7 +127,7 @@
                 a {
                     display: block;
                     padding: 0.5rem 1rem 0.5rem 3rem;
-                    color: var(--text-secondary);
+                    color: var(--text-primary);
                     text-decoration: none;
                     font-size: 0.875rem;
                     border-radius: 6px;
@@ -133,8 +140,8 @@
                     }
 
                     &.active {
-                        background: rgba(25, 118, 210, 0.1);
-                        color: var(--primary-color);
+                        background: var(--border-color);
+                        color: var(--text-primary);
                     }
                 }
             }

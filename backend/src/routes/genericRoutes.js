@@ -34,7 +34,7 @@ genericRouter.post('/upload', async (req, res) => {
                 const groupRaw = item.attributes['group-title'] || '';
                 const prefix = groupRaw.split('|')[0]?.trim().toLowerCase();
                 let type = 'channel';
-                let subtype = groupRaw.split('|')[1]?.trim().toLowerCase();
+                let subtype = groupRaw.split('|')[1]?.trim();
 
                 if (prefix === 'series') {
                     type = 'series';
@@ -47,7 +47,7 @@ genericRouter.post('/upload', async (req, res) => {
                     title: item.title,
                     url: item.url,
                     item_type: type,
-                    item_subtype: sanitizeFileName(subtype),
+                    item_subtype: subtype,
                     tvg_id: item.attributes['tvg-id'],
                     tvg_name: item.attributes['tvg-name'],
                     tvg_logo: item.attributes['tvg-logo'],

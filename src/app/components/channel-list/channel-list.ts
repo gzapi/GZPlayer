@@ -1,17 +1,18 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, filter } from 'rxjs';
 
 import { Channel, Movie, Series, M3UPlaylist } from '../../models/interfaces';
 import { FavoritesService } from '../../services/favorites';
 import { AppComponent } from '../../app';
 import { environment } from '../../../environments/environment';
+import { Functions } from '../../../functions';
 
 @Component({
     selector: 'app-channel-list',
@@ -45,18 +46,13 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
         private favoritesService: FavoritesService,
         private route: ActivatedRoute,
         private router: Router,
-        private appComponent: AppComponent
+        private appComponent: AppComponent,
+        private functions: Functions
     ) {}
 
     ngOnInit(): void {
         // Detectar rota atual
         this.currentRoute = this.router.url.split('/')[1] || 'channels';
-        this.currentType  = this.router.url.split('/')[2] || '';
-
-        // Obter dados da playlist do componente pai
-        this.playlist = this.appComponent.playlistData;
-
-        this.updateFilteredItems();
 
         // Escutar mudanças nos favoritos
         this.favoritesService.favorites$.pipe(
@@ -73,6 +69,33 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
             this.playlist = this.appComponent.playlistData;
             this.updateFilteredItems();
         });
+
+        // Verificar se os dados estão disponíveis
+        this.initializeData();
+    }
+
+    private initializeData(): void {
+        // Verifica se os dados estão disponíveis
+        if (this.appComponent.playlistData) {
+            this.playlist = this.appComponent.playlistData;
+            this.updateFilteredItems();
+        } else {
+            // Se não estão, aguarda até estarem disponíveis
+            this.waitForPlaylistData();
+        }
+    }
+
+    private waitForPlaylistData(): void {
+        // Verifica periodicamente se os dados estão disponíveis
+        const checkData = () => {
+            if (this.appComponent.playlistData) {
+                this.playlist = this.appComponent.playlistData;
+                this.updateFilteredItems();
+            } else {
+                setTimeout(checkData, 500);
+            }
+        };
+        checkData();
     }
 
     ngOnChanges(): void {
@@ -167,7 +190,9 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
 
         // Filtrar por subtipo, se definido
         if (this.currentType) {
-            items = items.filter(item => item.item_subtype === this.currentType);
+            items = items.filter(item => 
+                this.functions.sanitizeKey(item.item_subtype ?? '') === this.currentType
+            );
         }
 
         // Aplicar filtro de busca
