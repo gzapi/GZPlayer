@@ -14,13 +14,28 @@
 
     <!-- Items Grid -->
     <div class="items-grid" *ngIf="!loading && filteredItems.length > 0">
-        <mat-card class="item-card" *ngFor="let item of filteredItems; trackBy: trackByFn"(click)="onItemClick(item)">        
-            <!-- Item Image -->
+        <mat-card class="item-card" 
+                  *ngFor="let item of filteredItems; trackBy: trackByFn"
+                  (click)="onItemClick(item)">
+                  
+            <!-- Item Image com Cache -->
             <div class="item-image">
-                <img [src]="getItemImage(item)" loading="lazy" [alt]="getItemTitle(item)" (error)="onImageError($event)">
+                <img appLogoCached="{{ getItemImageUrl(item) }}"
+                    [alt]="getItemTitle(item)"
+                    [title]="getItemTitle(item)"
+                    [width]="getImageSize(item).width"
+                    [height]="getImageSize(item).height"
+                    [fallbackSrc]="'/assets/default.webp'"
+                    class="item-logo"
+                    loading="lazy"
+                >
 
                 <!-- Favorite Button -->
-                <button mat-icon-button class="favorite-btn" [class.favorited]="isFavorite(item)" (click)="toggleFavorite(item, $event)" [title]="isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
+                <button mat-icon-button 
+                        class="favorite-btn" 
+                        [class.favorited]="isFavorite(item)" 
+                        (click)="toggleFavorite(item, $event)" 
+                        [title]="isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
                     <mat-icon>{{ isFavorite(item) ? 'favorite' : 'favorite_border' }}</mat-icon>
                 </button>
 
@@ -28,6 +43,15 @@
                 <div class="type-badge">
                     <mat-icon>{{ getTypeIcon(item) }}</mat-icon>
                 </div>
+
+                <!-- Refresh Logo Button (apenas em desenvolvimento) -->
+                <button *ngIf="isDevelopment" 
+                        mat-icon-button 
+                        class="refresh-logo-btn" 
+                        (click)="refreshItemLogo(item); $event.stopPropagation()"
+                        title="Atualizar logo">
+                    <mat-icon>refresh</mat-icon>
+                </button>
             </div>
 
             <!-- Item Content -->
@@ -50,5 +74,13 @@
                 </div>
             </mat-card-content>
         </mat-card>
+    </div>
+
+    <!-- Debug Panel (apenas em desenvolvimento) -->
+    <div *ngIf="isDevelopment && filteredItems.length > 0" class="debug-panel">
+        <details>
+            <summary>Cache Debug Info</summary>
+            <pre>{{ getCacheStats() | json }}</pre>
+        </details>
     </div>
 </div>

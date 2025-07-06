@@ -33,7 +33,10 @@
                     </div>
                         <ul class="sub-menu" *ngIf="showMovies && getMoviesCount() > 0">
                             <li *ngFor="let genre of sortedMovieGenres" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                                <a [routerLink]="['/movies', genre.key]">{{ genre.key }} ({{ genre.value.length }})</a>
+                                <a [routerLink]="['/movies', genre.key]" [class.active]="isRouteActive('/movies/' + genre.key)">
+                                    <mat-icon *ngIf="isRouteActive('/movies/' + genre.key)" class="icon-16">chevron_right</mat-icon>
+                                    {{ genre.displayName }} ({{ genre.value.length }})
+                                </a>
                             </li>
                         </ul>
 
@@ -46,7 +49,10 @@
                     </div>
                         <ul class="sub-menu" *ngIf="showSeries && getSeriesCount() > 0">
                             <li *ngFor="let seriesGroup of sortedSeriesGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                                <a [routerLink]="['/series', seriesGroup.key]">{{ seriesGroup.key }} ({{ seriesGroup.value.length }})</a>
+                                <a [routerLink]="['/series', seriesGroup.key]" [class.active]="isRouteActive('/series/' + seriesGroup.key)">
+                                    <mat-icon *ngIf="isRouteActive('/series/' + seriesGroup.key)" class="icon-16">chevron_right</mat-icon>
+                                    {{ seriesGroup.displayName }} ({{ seriesGroup.value.length }})
+                                </a>
                             </li>
                         </ul>
 
@@ -93,12 +99,6 @@
 
         <!-- Center Content -->
         <div class="content-area">
-            <!-- Video Player -->
-            <div class="player-container" *ngIf="selectedItem">
-                <app-video-player [url]="selectedItem.url" [title]="getSelectedItemTitle()"></app-video-player>
-            </div>
-
-            <!-- Content List -->
             <div class="list-container">
                 <router-outlet></router-outlet>
             </div>

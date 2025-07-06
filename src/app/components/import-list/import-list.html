@@ -8,7 +8,15 @@
             </button>
         </div>
 
-        <div class="modal-body">
+        <!-- Loading Section -->
+        <div class="modal-body" *ngIf="isLoading">
+            <div class="loading loading-indicator">
+                <div class="spinner"></div>
+                <p>Processando arquivo...</p>
+            </div>            
+        </div>
+
+        <div class="modal-body" *ngIf="!isLoading">
             <!-- Upload Section -->
             <div class="upload-section" (dragover)="onDragOver($event)" (dragleave)="onDragLeave()" (drop)="onDrop($event)">
                 <div class="upload-area" (click)="fileInput.click()" [class.drag-over]="isDragOver">
@@ -30,12 +38,6 @@
 
                 <input type="file" #fileInput accept=".m3u,.m3u8" (change)="onFileSelected($event)" style="display: none"/>
             </div>
-
-            <!-- Loading Section -->
-            <div class="loading" *ngIf="isLoading">
-                <div class="spinner"></div>
-                <p>Processando arquivo...</p>
-            </div>
         </div>
 
         <div class="modal-footer">
@@ -44,7 +46,7 @@
                 Cancelar
             </button>
 
-            <button class="btn btn-primary" [disabled]="!parsedData" (click)="confirmUpload()">
+            <button class="btn btn-primary" [disabled]="!parsedData" (click)="uploadM3U()">
                 <span class="material-icons">check</span>
                 Carregar Playlist
             </button>

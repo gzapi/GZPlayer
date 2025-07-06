@@ -53,6 +53,7 @@ export class ImportList {
     showSummary = false;
     isDragOver = false;
     fileName = '';
+    fileM3U: File | null = null;
     parsedData: M3UData | null = null;
     loadStatus: LoadStatus | null = null;
 
@@ -114,6 +115,7 @@ export class ImportList {
                     this.parsedData = this.processGroupedData(playlist);
                     this.isLoading = false;
                     this.showSummary = true;
+                    this.fileM3U = file;
                     this.cdr.markForCheck();
                 },
                 error: (error) => {
@@ -198,20 +200,27 @@ export class ImportList {
         });
     }
 
-    async uploadM3U(file: File): Promise<void> {
+    async uploadM3U(): Promise<void> {
         try {
+            if (!this.fileM3U) {
+                this.showSnackBar('Por favor, selecione um arquivo .m3u ou .m3u8', 'error');
+                return;
+            }
+
             const formData = new FormData();
-            formData.append('playlist', file);
+            formData.append('playlist', this.fileM3U);
             this.isLoading = true;
 
             const data = await this.functions.formPostExpress(formData, 'api/upload', true);
 
             if (data?.success === true) {
-                this.isLoading = false;
+                this.confirmUpload();
             } else {
                 console.error('Erro ao enviar M3U para o servidor:', data);
                 this.snackBar.open('Erro ao enviar M3U para o servidor', 'OK', { duration: 5000 });
             }
+
+            this.isLoading = false;
         } catch (error) {
             this.isLoading = false;
             console.error('Erro ao enviar M3U para o servidor:', error);

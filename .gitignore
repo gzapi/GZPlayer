@@ -6,6 +6,10 @@
 /out-tsc
 /bazel-out
 
+# Arquivos temporários
+/backend/src/cache
+/backend/src/temp
+
 # Node
 /node_modules
 npm-debug.log
@@ -40,3 +44,4 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+backend/src/cache/logos/tapete_vermelho.jpg

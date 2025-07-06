@@ -423,3 +423,20 @@
         color: white !important;
     }
 }
+
+.logo-loading {
+    opacity: 0.6;
+    filter: blur(1px);
+    transition: all 0.3s ease;
+}
+
+.logo-error {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+.logo-success {
+    opacity: 1;
+    filter: none;
+    transition: all 0.3s ease;
+}
