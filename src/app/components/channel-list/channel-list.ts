@@ -44,9 +44,8 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
 
     constructor(
         private favoritesService: FavoritesService,
-        private route: ActivatedRoute,
         private router: Router,
-        private appComponent: AppComponent,
+        public appComponent: AppComponent,
         private functions: Functions
     ) {}
 

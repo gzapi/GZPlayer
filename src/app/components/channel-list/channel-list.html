@@ -1,3 +1,7 @@
+<div id="topo" class="topo-fixo" *ngIf="appComponent.routeTitle">
+    <span id="channelListTitle" #channelListTitle>{{ appComponent.routeTitle }}</span>
+</div>
+
 <div class="channel-list-container">
     <!-- Loading State -->
     <div class="loading-container" *ngIf="loading">

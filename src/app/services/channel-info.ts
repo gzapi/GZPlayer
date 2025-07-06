@@ -195,14 +195,14 @@ export class ChannelInfoService {
         return {
             title: movie.title,
             overview: 'Filme emocionante com uma história cativante que prende a atenção do público do início ao fim.',
-            tvg_logo: 'https://via.placeholder.com/500x750?text=' + encodeURIComponent(movie.title),
+            tvg_logo: movie.tvg_logo || '/assets/default.webp',
             backdrop: 'https://via.placeholder.com/1280x720?text=' + encodeURIComponent(movie.title),
-            releaseDate: '2023-01-01',
-            rating: 7.5,
-            voteCount: 1000,
+            releaseDate: '',
+            rating: 0,
+            voteCount: 0,
             originalTitle: movie.title,
-            language: 'pt',
-            popularity: 85.5,
+            language: '',
+            popularity: 0.0,
             genres: movie.genre ? [movie.genre] : ['Drama'],
             runtime: typeof movie.duration === 'number' ? movie.duration : 120
         };

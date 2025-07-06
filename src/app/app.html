@@ -17,7 +17,7 @@
                     </div>
                         <ul class="sub-menu" *ngIf="showChannels && getChannelsCount() > 0">
                             <li *ngFor="let channelGroup of sortedChannelGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                                <a [routerLink]="['/channels', channelGroup.key]" [class.active]="isRouteActive('/channels/' + channelGroup.key)">
+                                <a [routerLink]="['/channels', channelGroup.key]" [class.active]="isRouteActive('/channels/' + channelGroup.key)" (click)="setRouteTitle('Canais - ' + channelGroup.displayName)">
                                     <mat-icon *ngIf="isRouteActive('/channels/' + channelGroup.key)" class="icon-16">chevron_right</mat-icon>
                                     {{ channelGroup.displayName }} ({{ channelGroup.value.length }})
                                 </a>
@@ -33,7 +33,7 @@
                     </div>
                         <ul class="sub-menu" *ngIf="showMovies && getMoviesCount() > 0">
                             <li *ngFor="let genre of sortedMovieGenres" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-                                <a [routerLink]="['/movies', genre.key]" [class.active]="isRouteActive('/movies/' + genre.key)">
+                                <a [routerLink]="['/movies', genre.key]" [class.active]="isRouteActive('/movies/' + genre.key)" (click)="setRouteTitle('Canais - ' + genre.displayName)">
                                     <mat-icon *ngIf="isRouteActive('/movies/' + genre.key)" class="icon-16">chevron_right</mat-icon>
                                     {{ genre.displayName }} ({{ genre.value.length }})
                                 </a>
@@ -48,7 +48,7 @@
                         <mat-icon class="arrow-icon" *ngIf="getSeriesCount() > 0">{{ showSeries ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </div>
                         <ul class="sub-menu" *ngIf="showSeries && getSeriesCount() > 0">
-                            <li *ngFor="let seriesGroup of sortedSeriesGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+                            <li *ngFor="let seriesGroup of sortedSeriesGroups" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="setRouteTitle('Canais - ' + seriesGroup.displayName)">
                                 <a [routerLink]="['/series', seriesGroup.key]" [class.active]="isRouteActive('/series/' + seriesGroup.key)">
                                     <mat-icon *ngIf="isRouteActive('/series/' + seriesGroup.key)" class="icon-16">chevron_right</mat-icon>
                                     {{ seriesGroup.displayName }} ({{ seriesGroup.value.length }})
@@ -79,14 +79,6 @@
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- File Upload -->
-                <div class="file-upload">
-                    <button mat-stroked-button color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="importM3U()" [disabled]="loading" class="upload-button">
-                        <mat-icon>upload_file</mat-icon>
-                        Carregar Arquivo
-                    </button>
                 </div>
 
                 <!-- Loading Indicator -->

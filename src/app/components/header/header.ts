@@ -15,7 +15,9 @@ import { ThemeService } from '../../services/theme';
 import { FavoritesService } from '../../services/favorites';
 import { M3UPlaylist } from '../../models/interfaces';
 import { AuthService } from '../../auth/auth.service';
-import { Router } from '@angular/router';
+import { ImportList } from '../import-list/import-list';
+import { MatDialog } from '@angular/material/dialog';
+import { AppComponent } from '../../app';
 
 interface PlaylistStats {
     channels: number;
@@ -60,7 +62,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
         private themeService: ThemeService,
         private favoritesService: FavoritesService,
         private snackBar: MatSnackBar,
-        private authService: AuthService
+        private authService: AuthService,
+        private dialog: MatDialog,
+        public appComponent: AppComponent
     ) {}
 
     ngOnInit(): void {
@@ -112,6 +116,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
     onSearchInput(): void {
         this.searchTermChange.emit(this.searchTerm);
         this.searchSubject.next(this.searchTerm);
+    }
+
+    public importM3U(): void {
+        const dialogRef = this.dialog.open(ImportList, {
+            width: '400px',
+            data: {
+                title: 'Confirmar Ação',
+                content: 'Tem certeza que deseja continuar?',
+                confirmText: 'Sim',
+                cancelText: 'Não'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            this.snackBar.open(result.message, 'Fechar');
+
+            if (result) {
+                console.log('Usuário confirmou');
+                this.appComponent.loadM3U({});
+            } else {
+                console.log('Usuário cancelou');
+            }
+        });
     }
 
     clearFavorites(): void {

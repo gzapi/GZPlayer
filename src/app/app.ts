@@ -22,7 +22,6 @@ import { Channel, Movie, Series, M3UPlaylist } from './models/interfaces';
 import { Functions } from '../functions';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth/auth.service';
-import { ImportList } from './components/import-list/import-list';
 import { MatDialog } from '@angular/material/dialog';
 
 interface LoadStatus {
@@ -97,6 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
     showChannels: boolean = false;
     showMovies: boolean = false;
     showSeries: boolean = false;
+    routeTitle = '';
     currentView: 'channels' | 'movies' | 'series' | 'favorites' = 'channels';
 
     // Controle de performance e progresso
@@ -131,8 +131,7 @@ export class AppComponent implements OnInit, OnDestroy {
         public functions: Functions,
         private authService: AuthService,
         private fb: FormBuilder,
-        private cdr: ChangeDetectorRef,
-        private dialog: MatDialog
+        private cdr: ChangeDetectorRef
     ) {
         this.authService.isLoggedIn$.subscribe(isLoggedIn => {
             this.isLogedIn = isLoggedIn;
@@ -386,6 +385,10 @@ export class AppComponent implements OnInit, OnDestroy {
             batchSize: SUPER_BATCH_SIZE,
             updateInterval: PROGRESS_UPDATE_INTERVAL
         });
+    }
+
+    setRouteTitle(title: string) {
+        this.routeTitle = title;
     }
 
     /**
@@ -770,29 +773,6 @@ export class AppComponent implements OnInit, OnDestroy {
         for (let i = 0; i < items.length; i++) {
             items[i].isFavorite = this.favoritesService.isFavorite(items[i].id, type);
         }
-    }
-
-    public importM3U(): void {
-        const dialogRef = this.dialog.open(ImportList, {
-            width: '400px',
-            data: {
-                title: 'Confirmar Ação',
-                content: 'Tem certeza que deseja continuar?',
-                confirmText: 'Sim',
-                cancelText: 'Não'
-            }
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-            this.snackBar.open(result.message, 'Fechar');
-
-            if (result) {
-                console.log('Usuário confirmou');
-                this.loadM3U({});
-            } else {
-                console.log('Usuário cancelou');
-            }
-        });
     }
 
     /**
