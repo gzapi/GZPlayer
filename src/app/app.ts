@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, takeUntil, filter, debounceTime, BehaviorSubject, take } from 'rxjs';
+import { Subject, takeUntil, filter, debounceTime, BehaviorSubject } from 'rxjs';
 
 import { HeaderComponent } from './components/header/header';
 import { SidePanelComponent } from './components/side-panel/side-panel';
@@ -24,9 +24,6 @@ import { environment } from '../environments/environment';
 import { AuthService } from './auth/auth.service';
 import { ImportList } from './components/import-list/import-list';
 import { MatDialog } from '@angular/material/dialog';
-
-// Imports para cache de logos
-import { LogoCacheService } from './services/local-cache';
 
 interface LoadStatus {
     type: 'success' | 'error' | 'warning';
@@ -122,19 +119,6 @@ export class AppComponent implements OnInit, OnDestroy {
         stage: 'loading'
     });
 
-    // Propriedades para cache de logos
-    private logoPreloadInProgress = false;
-    private logosCacheStats: any = null;
-
-    // Propriedades para templates (adicionadas)
-    isDevelopment = !environment.production;
-    showDebugInfo = !environment.production;
-    showCacheNotification = false;
-    cacheNotificationType: 'success' | 'warning' | 'error' = 'success';
-    cacheNotificationMessage = '';
-    skeletonItems = Array(12).fill(null);
-    searchResults: any[] = [];
-
     isLogedIn = false;
     private destroy$ = new Subject<void>();
     private processingAbortController?: AbortController;
@@ -148,8 +132,7 @@ export class AppComponent implements OnInit, OnDestroy {
         private authService: AuthService,
         private fb: FormBuilder,
         private cdr: ChangeDetectorRef,
-        private dialog: MatDialog,
-        private logoCacheService: LogoCacheService
+        private dialog: MatDialog
     ) {
         this.authService.isLoggedIn$.subscribe(isLoggedIn => {
             this.isLogedIn = isLoggedIn;
@@ -169,9 +152,6 @@ export class AppComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.setupRouteListener();
         this.setupFavoritesListener();
-
-        // Iniciar monitoramento de cache de logos
-        this.startCacheMonitoring();
 
         setTimeout(() => {
             this.expandMenu();
@@ -354,62 +334,47 @@ export class AppComponent implements OnInit, OnDestroy {
             return;
         }
 
-        // Primeira passada: classificar e coletar URLs de logos
-        const logoUrls: string[] = [];
-
+        // Primeira passada: apenas classificar por tipo (mais rápido)
         for (let i = 0; i < items.length; i++) {
             if (this.processingAbortController?.signal.aborted) {
                 throw new Error('Processing aborted');
             }
 
             const item = items[i];
-            const itemType = item.item_type;
             
+            // Classificação inline otimizada
+            const itemType = item.item_type;
             if (itemType === 'channel') {
                 channels.push(item);
-                // Coletar URL do logo se existir
-                if (item.logo_url && this.isValidLogoUrl(item.logo_url)) {
-                    logoUrls.push(item.logo_url);
-                }
             } else if (itemType === 'movie') {
                 movies.push(item);
-                if (item.poster_url && this.isValidLogoUrl(item.poster_url)) {
-                    logoUrls.push(item.poster_url);
-                }
             } else if (itemType === 'series') {
                 series.push(item);
-                if (item.poster_url && this.isValidLogoUrl(item.poster_url)) {
-                    logoUrls.push(item.poster_url);
-                }
             }
 
             processed++;
 
             // Atualizar progresso e yield periodicamente
             if (processed % PROGRESS_UPDATE_INTERVAL === 0) {
-                const progressPercentage = Math.round((processed / total) * 60); // 60% para processamento
+                const progressPercentage = Math.round((processed / total) * 75); // 75% para processamento
                 this.updateProgress(processed, total, 'processing', progressPercentage);
                 
+                // Yield mais eficiente baseado no volume
                 if (total > 50000) {
-                    await new Promise<void>(resolve => setTimeout(resolve, 0));
+                    await new Promise(resolve => setTimeout(resolve, 0)); // Yield mínimo
                 } else {
                     await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
                 }
             }
         }
 
-        this.updateProgress(total, total, 'processing', 60);
+        this.updateProgress(total, total, 'processing', 75);
 
         // Criar playlist
         this.currentPlaylist = { channels, movies, series };
 
         // Agrupar de forma otimizada
         await this.groupAllItemsSuperOptimized();
-
-        this.updateProgress(total, total, 'processing', 80);
-
-        // Pré-carregar logos em background (não bloquear UI)
-        this.preloadLogosInBackground(logoUrls);
 
         this.updateProgress(total, total, 'complete', 100);
         
@@ -418,7 +383,6 @@ export class AppComponent implements OnInit, OnDestroy {
             movies: movies.length,
             series: series.length,
             total: channels.length + movies.length + series.length,
-            logoUrls: logoUrls.length,
             batchSize: SUPER_BATCH_SIZE,
             updateInterval: PROGRESS_UPDATE_INTERVAL
         });
@@ -428,7 +392,7 @@ export class AppComponent implements OnInit, OnDestroy {
      * Processamento com requestIdleCallback para volumes extremos
      */
     private async processWithIdleCallback(items: any[]): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const channels: Channel[] = [];
             const movies: Movie[] = [];
             const series: Series[] = [];
@@ -564,7 +528,7 @@ export class AppComponent implements OnInit, OnDestroy {
      * Processamento com Web Worker para volumes muito grandes
      */
     private async processWithWebWorker(items: any[]): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             // Verificar se Web Workers são suportados
             if (typeof Worker === 'undefined') {
                 console.warn('Web Workers não suportados, usando processamento normal');
@@ -628,7 +592,7 @@ export class AppComponent implements OnInit, OnDestroy {
                             worker.terminate();
                             URL.revokeObjectURL(workerUrl);
                             resolve();
-                        }).catch(reject);
+                        });
                     }
                 };
 
@@ -884,7 +848,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     private async yieldToUI(): Promise<void> {
-        return new Promise<void>(resolve => setTimeout(resolve, this.PROCESSING_DELAY));
+        return new Promise(resolve => setTimeout(resolve, this.PROCESSING_DELAY));
     }
 
     /**
@@ -903,6 +867,8 @@ export class AppComponent implements OnInit, OnDestroy {
      */
     toggleChannels(): void {
         this.showChannels = !this.showChannels;
+        this.showMovies = !this.showChannels;
+        this.showSeries = false;
         this.cdr.markForCheck();
     }
 
@@ -1068,547 +1034,49 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     /**
-     * MÉTODOS PARA CACHE DE LOGOS
+     * Método de busca otimizada para grandes volumes
      */
-
-    /**
-     * Pré-carregar logos em background sem bloquear UI
-     */
-    private async preloadLogosInBackground(logoUrls: string[]): Promise<void> {
-        if (this.logoPreloadInProgress || !logoUrls.length) {
-            return;
+    searchItems(searchTerm: string, type?: 'channel' | 'movie' | 'series'): any[] {
+        if (!this.currentPlaylist || !searchTerm.trim()) {
+            return [];
         }
 
-        this.logoPreloadInProgress = true;
-
-        try {
-            // Remover duplicatas e filtrar URLs válidas
-            const uniqueUrls = [...new Set(logoUrls)].filter(url => this.isValidLogoUrl(url));
-
-            if (uniqueUrls.length === 0) {
-                return;
-            }
-
-            console.log(`Iniciando pré-carregamento de ${uniqueUrls.length} logos...`);
-
-            // Aguardar cache estar pronto
-            await this.logoCacheService.isCacheReady().pipe(
-                filter(ready => ready),
-                take(1)
-            ).toPromise();
-
-            // Pré-carregar em lotes pequenos para não sobrecarregar
-            const batchSize = 10;
-            let loadedCount = 0;
-
-            for (let i = 0; i < uniqueUrls.length; i += batchSize) {
-                if (this.processingAbortController?.signal.aborted) {
-                    break;
-                }
-
-                const batch = uniqueUrls.slice(i, i + batchSize);
-                
-                await this.logoCacheService.preloadLogos(batch, 3).catch(error => {
-                    console.warn('Erro no pré-carregamento de lote:', error);
-                });
-
-                loadedCount += batch.length;
-
-                // Atualizar status periodicamente
-                if (loadedCount % 50 === 0) {
-                    const progress = Math.round((loadedCount / uniqueUrls.length) * 100);
-                    console.log(`Pré-carregamento: ${loadedCount}/${uniqueUrls.length} (${progress}%)`);
-                }
-
-                // Pequena pausa para não sobrecarregar
-                await new Promise<void>(resolve => setTimeout(resolve, 100));
-            }
-
-            // Obter estatísticas finais
-            this.logosCacheStats = this.logoCacheService.getCacheStats();
-            
-            console.log('Pré-carregamento de logos concluído:', this.logosCacheStats);
-
-        } catch (error) {
-            console.error('Erro no pré-carregamento de logos:', error);
-        } finally {
-            this.logoPreloadInProgress = false;
-        }
-    }
-
-    /**
-     * Validar URL de logo
-     */
-    private isValidLogoUrl(url: string): boolean {
-        if (!url || typeof url !== 'string') {
-            return false;
-        }
-
-        try {
-            const urlObj = new URL(url);
-            return urlObj.protocol === 'http:' || urlObj.protocol === 'https:';
-        } catch {
-            return false;
-        }
-    }
-
-    /**
-     * Obter estatísticas do cache de logos
-     */
-    getLogoCacheStats(): any {
-        return this.logoCacheService.getCacheStats();
-    }
-
-    /**
-     * Limpar cache de logos
-     */
-    async clearLogoCache(): Promise<void> {
-        try {
-            await this.logoCacheService.clearCache();
-            this.showCacheNotificationMessage('Cache de logos limpo com sucesso', 'success');
-        } catch (error) {
-            console.error('Erro ao limpar cache:', error);
-            this.showCacheNotificationMessage('Erro ao limpar cache de logos', 'error');
-        }
-    }
-
-    /**
-     * Limpar cache expirado
-     */
-    async cleanExpiredLogos(): Promise<void> {
-        try {
-            const removed = await this.logoCacheService.cleanExpiredCache();
-            if (removed > 0) {
-                this.showCacheNotificationMessage(`${removed} logos expirados removidos`, 'success');
-            } else {
-                this.showCacheNotificationMessage('Nenhum logo expirado encontrado', 'success');
-            }
-        } catch (error) {
-            console.error('Erro ao limpar logos expirados:', error);
-            this.showCacheNotificationMessage('Erro ao limpar logos expirados', 'error');
-        }
-    }
-
-    /**
-     * Exportar informações do cache
-     */
-    exportCacheInfo(): void {
-        const cacheInfo = {
-            ...this.logoCacheService.getCacheInfo(),
-            performance: this.getPerformanceStats(),
-            timestamp: new Date().toISOString()
-        };
-
-        const blob = new Blob([JSON.stringify(cacheInfo, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `logo-cache-info-${Date.now()}.json`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-
-        this.showCacheNotificationMessage('Informações do cache exportadas!', 'success');
-    }
-
-    /**
-     * Forçar re-download de um logo específico
-     */
-    async refreshLogo(logoUrl: string): Promise<void> {
-        if (!logoUrl) return;
-
-        try {
-            // Recarregar
-            this.logoCacheService.getLogo(logoUrl).subscribe({
-                next: (dataUrl) => {
-                    if (dataUrl) {
-                        this.showCacheNotificationMessage('Logo atualizado com sucesso', 'success');
-                    }
-                },
-                error: (error) => {
-                    console.error('Erro ao atualizar logo:', error);
-                    this.showCacheNotificationMessage('Erro ao atualizar logo', 'error');
-                }
-            });
-        } catch (error) {
-            console.error('Erro ao refresh do logo:', error);
-        }
-    }
-
-    /**
-     * Verificar saúde do cache
-     */
-    checkCacheHealth(): any {
-        const stats = this.logoCacheService.getCacheStats();
-        const info = this.logoCacheService.getCacheInfo();
-        
-        const health = {
-            status: 'healthy',
-            issues: [] as string[],
-            recommendations: [] as string[],
-            stats,
-            info
-        };
-
-        // Verificar hit rate baixo
-        if (stats.hitRate < 50 && stats.hits + stats.misses > 100) {
-            health.status = 'warning';
-            health.issues.push('Taxa de acerto baixa do cache');
-            health.recommendations.push('Considere aumentar o tamanho do cache ou verificar URLs de logos');
-        }
-
-        // Verificar uso de memória alto
-        const memoryUsage = (stats.totalSize / (50 * 1024 * 1024)) * 100; // % do limite
-        if (memoryUsage > 80) {
-            health.status = 'warning';
-            health.issues.push('Uso de memória alto');
-            health.recommendations.push('Execute limpeza de cache expirado');
-        }
-
-        // Verificar muitos itens
-        if (stats.totalItems > 800) {
-            health.issues.push('Muitos itens no cache');
-            health.recommendations.push('Cache próximo do limite máximo');
-        }
-
-        return health;
-    }
-
-    /**
-     * Otimizar cache automaticamente
-     */
-    async optimizeCache(): Promise<void> {
-        try {
-            this.showCacheNotificationMessage('Otimizando cache...', 'warning');
-            
-            const removed = await this.logoCacheService.cleanExpiredCache();
-            const health = this.checkCacheHealth();
-            
-            let message = `Otimização concluída. ${removed} itens removidos.`;
-            let type: 'success' | 'warning' | 'error' = 'success';
-            
-            if (health.status === 'warning') {
-                message += ` Atenção: ${health.issues.join(', ')}`;
-                type = 'warning';
-            }
-
-            this.showCacheNotificationMessage(message, type);
-            
-        } catch (error) {
-            console.error('Erro na otimização:', error);
-            this.showCacheNotificationMessage('Erro durante otimização do cache', 'error');
-        }
-    }
-
-    /**
-     * Método para monitorar performance do cache em tempo real
-     */
-    startCacheMonitoring(): void {
-        // Verificar cache a cada 5 minutos
-        setInterval(() => {
-            const health = this.checkCacheHealth();
-            if (health.status === 'warning' && health.issues.length > 0) {
-                console.warn('Cache Health Warning:', health.issues);
-            }
-        }, 5 * 60 * 1000);
-
-        // Limpeza automática de expirados a cada hora
-        setInterval(() => {
-            this.logoCacheService.cleanExpiredCache().catch(error => {
-                console.error('Erro na limpeza automática:', error);
-            });
-        }, 60 * 60 * 1000);
-    }
-
-    /**
-     * MÉTODOS ADICIONAIS PARA TEMPLATES
-     */
-
-    /**
-     * Obter tamanho responsivo do logo
-     */
-    getLogoSize(): number {
-        const screenWidth = window.innerWidth;
-        if (screenWidth < 600) return 32;
-        if (screenWidth < 960) return 48;
-        return 64;
-    }
-
-    /**
-     * Obter logo do primeiro canal de um grupo
-     */
-    getFirstChannelLogo(channels: Channel[]): string {
-        return channels && channels.length > 0 ? channels[0].tvg_logo || '' : '';
-    }
-
-    /**
-     * Obter poster do primeiro filme de um gênero
-     */
-    getFirstMoviePoster(movies: Movie[]): string {
-        return movies && movies.length > 0 ? movies[0].tvg_logo || '' : '';
-    }
-
-    /**
-     * TrackBy functions para performance
-     */
-    trackByGenre(index: number, item: GroupedItems<Movie>): string {
-        return item.key;
-    }
-
-    trackByMovie(index: number, item: Movie): string {
-        return item.id?.toString() || index.toString();
-    }
-
-    trackByChannel(index: number, item: Channel): string {
-        return item.id?.toString() || index.toString();
-    }
-
-    trackBySeries(index: number, item: Series): string {
-        return item.id?.toString() || index.toString();
-    }
-
-    /**
-     * Formatar bytes para exibição
-     */
-    formatBytes(bytes: number): string {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    }
-
-    /**
-     * Selecionar filme
-     */
-    selectMovie(movie: Movie): void {
-        this.selectItem(movie, 'movie');
-    }
-
-    /**
-     * Reproduzir canal
-     */
-    playChannel(channel: Channel): void {
-        console.log('Playing channel:', channel.title);
-        this.selectItem(channel, 'channel');
-    }
-
-    /**
-     * Toggle favorito
-     */
-    toggleFavorite(item: Channel | Movie | Series): void {
-        const type = this.getItemType(item);
-        if (item.isFavorite) {
-            this.favoritesService.removeFromFavorites(item.id, type);
-        } else {
-            this.favoritesService.addToFavorites(item, type);
-        }
-        item.isFavorite = !item.isFavorite;
-        this.cdr.markForCheck();
-    }
-
-    /**
-     * Determinar tipo do item
-     */
-    private getItemType(item: any): 'channel' | 'movie' | 'series' {
-        if (item.item_type) {
-            return item.item_type;
-        }
-        // Fallback baseado em propriedades
-        if (item.logo_url) return 'channel';
-        if (item.poster_url) return item.title?.includes('S0') ? 'series' : 'movie';
-        return 'channel';
-    }
-
-    /**
-     * Atualizar logo de um grupo de canais
-     */
-    refreshChannelGroupLogo(group: GroupedItems<Channel>): void {
-        const firstChannel = group.value[0];
-        if (firstChannel?.tvg_logo) {
-            this.refreshLogo(firstChannel.tvg_logo);
-        }
-    }
-
-    /**
-     * MÉTODOS PARA CACHE HEALTH
-     */
-
-    /**
-     * Obter classe CSS para health status
-     */
-    getCacheHealthClass(): string {
-        const health = this.checkCacheHealth();
-        return `cache-health-${health.status}`;
-    }
-
-    /**
-     * Obter ícone para health status
-     */
-    getCacheHealthIcon(): string {
-        const health = this.checkCacheHealth();
-        switch (health.status) {
-            case 'healthy': return 'check_circle';
-            case 'warning': return 'warning';
-            case 'poor': return 'error';
-            default: return 'help';
-        }
-    }
-
-    /**
-     * Obter mensagem de health status
-     */
-    getCacheHealthMessage(): string {
-        const health = this.checkCacheHealth();
-        switch (health.status) {
-            case 'healthy': return 'Cache funcionando perfeitamente';
-            case 'warning': return `Atenção: ${health.issues.join(', ')}`;
-            case 'poor': return 'Cache com problemas críticos';
-            default: return 'Status desconhecido';
-        }
-    }
-
-    /**
-     * MÉTODOS PARA NOTIFICAÇÕES DE CACHE
-     */
-
-    /**
-     * Mostrar notificação de cache
-     */
-    showCacheNotificationMessage(message: string, type: 'success' | 'warning' | 'error' = 'success'): void {
-        this.cacheNotificationMessage = message;
-        this.cacheNotificationType = type;
-        this.showCacheNotification = true;
-        this.cdr.markForCheck();
-
-        // Auto dismiss após 5 segundos
-        setTimeout(() => {
-            this.dismissCacheNotification();
-        }, 5000);
-    }
-
-    /**
-     * Dispensar notificação
-     */
-    dismissCacheNotification(): void {
-        this.showCacheNotification = false;
-        this.cdr.markForCheck();
-    }
-
-    /**
-     * Obter ícone da notificação
-     */
-    getCacheNotificationIcon(): string {
-        switch (this.cacheNotificationType) {
-            case 'success': return 'check_circle';
-            case 'warning': return 'warning';
-            case 'error': return 'error';
-            default: return 'info';
-        }
-    }
-
-    /**
-     * MÉTODOS PARA BUSCA
-     */
-
-    /**
-     * Buscar itens
-     */
-    searchItems(searchTerm: string): void {
-        if (!searchTerm || searchTerm.length < 2) {
-            this.searchResults = [];
-            return;
-        }
-
-        this.searchResults = this.performSearch(searchTerm);
-        this.cdr.markForCheck();
-    }
-
-    /**
-     * Realizar busca nos dados
-     */
-    private performSearch(term: string): any[] {
-        if (!this.currentPlaylist) return [];
-
+        const term = searchTerm.toLowerCase().trim();
         const results: any[] = [];
-        const searchTerm = term.toLowerCase();
+        const maxResults = 100; // Limitar resultados para performance
 
-        // Buscar canais
-        this.currentPlaylist.channels.forEach(channel => {
-            if (channel.title?.toLowerCase().includes(searchTerm) ||
-                channel.item_subtype?.toLowerCase().includes(searchTerm)) {
-                results.push({
-                    ...channel,
-                    searchType: 'channel'
-                });
+        // Função de busca otimizada
+        const searchInArray = (items: any[], itemType: string) => {
+            for (let i = 0; i < items.length && results.length < maxResults; i++) {
+                const item = items[i];
+                if (item.title?.toLowerCase().includes(term) || 
+                    item.item_subtype?.toLowerCase().includes(term)) {
+                    results.push({ ...item, searchType: itemType });
+                }
             }
-        });
+        };
 
-        // Buscar filmes
-        this.currentPlaylist.movies.forEach(movie => {
-            if (movie.title?.toLowerCase().includes(searchTerm) ||
-                movie.item_subtype?.toLowerCase().includes(searchTerm)) {
-                results.push({
-                    ...movie,
-                    searchType: 'movie'
-                });
-            }
-        });
-
-        // Buscar séries
-        this.currentPlaylist.series.forEach(series => {
-            if (series.title?.toLowerCase().includes(searchTerm)) {
-                results.push({
-                    ...series,
-                    searchType: 'series'
-                });
-            }
-        });
-
-        return results.slice(0, 50); // Limitar resultados
-    }
-
-    /**
-     * Selecionar resultado da busca
-     */
-    selectSearchResult(result: any): void {
-        this.selectItem(result, result.searchType);
-        this.searchResults = []; // Limpar resultados
-    }
-
-    /**
-     * Obter logo do resultado da busca
-     */
-    getResultLogo(result: any): string {
-        switch (result.searchType) {
-            case 'channel': return result.logo_url || '';
-            case 'movie':
-            case 'series': return result.poster_url || '';
-            default: return '';
+        // Buscar por tipo específico ou em todos
+        if (!type || type === 'channel') {
+            searchInArray(this.currentPlaylist.channels, 'channel');
         }
-    }
-
-    /**
-     * Obter ícone baseado no tipo
-     */
-    getResultIcon(type: string): string {
-        switch (type) {
-            case 'channel': return 'tv';
-            case 'movie': return 'movie';
-            case 'series': return 'tv_series';
-            default: return 'image';
+        if (!type || type === 'movie') {
+            searchInArray(this.currentPlaylist.movies, 'movie');
         }
+        if (!type || type === 'series') {
+            searchInArray(this.currentPlaylist.series, 'series');
+        }
+
+        return results;
     }
 
     /**
-     * Exportar estatísticas em formato JSON
+     * Método para exportar estatísticas em formato JSON
      */
     exportStats(): void {
         const stats = {
             timestamp: new Date().toISOString(),
             performance: this.getPerformanceStats(),
-            cache: this.getLogoCacheStats(),
             groupStats: {
                 channelGroups: Object.keys(this.groupedChannels).length,
                 movieGroups: Object.keys(this.groupedMovies).length,
@@ -1640,6 +1108,6 @@ export class AppComponent implements OnInit, OnDestroy {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
 
-        this.showCacheNotificationMessage('Estatísticas exportadas com sucesso!', 'success');
+        this.snackBar.open('Estatísticas exportadas com sucesso!', 'OK', { duration: 3000 });
     }
 }

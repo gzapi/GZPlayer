@@ -14,10 +14,6 @@ import { AppComponent } from '../../app';
 import { environment } from '../../../environments/environment';
 import { Functions } from '../../../functions';
 
-// Imports para cache de logos
-import { LogoCacheService } from '../../services/local-cache';
-import { LogoCacheDirective } from '../../directives/logo-cache';
-
 @Component({
     selector: 'app-channel-list',
     standalone: true,
@@ -27,8 +23,7 @@ import { LogoCacheDirective } from '../../directives/logo-cache';
         MatIconModule,
         MatButtonModule,
         MatChipsModule,
-        MatProgressSpinnerModule,
-        LogoCacheDirective
+        MatProgressSpinnerModule
     ],
     templateUrl: './channel-list.html',
     styleUrls: ['./channel-list.scss']
@@ -43,10 +38,7 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     filteredItems: (Channel | Movie | Series)[] = [];
     loading = false;
     currentRoute = '';
-    currentType = '';
-
-    // Propriedades para cache de logos
-    isDevelopment = !environment.production;
+    currentType  = '';
 
     private destroy$ = new Subject<void>();
 
@@ -55,8 +47,7 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
         private route: ActivatedRoute,
         private router: Router,
         private appComponent: AppComponent,
-        private functions: Functions,
-        private logoCacheService: LogoCacheService
+        private functions: Functions
     ) {}
 
     ngOnInit(): void {
@@ -139,65 +130,12 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
         return item.title;
     }
 
-    /**
-     * Obter URL da imagem do item (otimizado para cache)
-     */
-    getItemImageUrl(item: Channel | Movie | Series): string {
-        // Prioridade: logo_url > poster_url > tvg_logo > fallback
-        if (item.tvg_logo) {
-            return item.tvg_logo;
-        }
-        
-        if (item.tvg_logo) {
-            return item.tvg_logo;
-        }
-
-        if (item.tvg_logo) {
-            // Se for URL relativa, adicionar base URL
-            if (item.tvg_logo.startsWith('/') || !item.tvg_logo.includes('://')) {
-                return environment.API_URL + item.tvg_logo;
-            }
-            return item.tvg_logo;
-        }
-
-        return ''; // Retorna vazio para usar fallback do componente
-    }
-
-    /**
-     * Método original mantido para compatibilidade
-     */
     getItemImage(item: Channel | Movie | Series): string {
-        const imageUrl = this.getItemImageUrl(item);
-        return imageUrl || '/assets/default.webp';
-    }
-
-    /**
-     * Obter ícone de fallback baseado no tipo
-     */
-    getFallbackIcon(item: Channel | Movie | Series): string {
-        const type = this.getItemType(item);
-        switch (type) {
-            case 'channel': return 'tv';
-            case 'movie': return 'movie';
-            case 'series': return 'tv_series';
-            default: return 'image';
+        if (item.tvg_logo) {
+            return environment.API_URL + item.tvg_logo;
         }
-    }
 
-    /**
-     * Obter tamanho da imagem baseado no tipo
-     */
-    getImageSize(item: Channel | Movie | Series): { width: number, height: number } {
-        const type = this.getItemType(item);
-        switch (type) {
-            case 'channel':
-                return { width: 64, height: 64 }; // Logos quadrados
-            case 'movie':
-            case 'series':
-                return { width: 120, height: 180 }; // Posters retangulares
-            default:
-                return { width: 64, height: 64 };
-        }
+        return '/assets/default.webp';
     }
 
     getItemSubtitle(item: Channel | Movie | Series): string {
@@ -230,7 +168,7 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
             return;
         }
 
-        this.currentType = this.router.url.split('/')[2] || '';
+        this.currentType  = this.router.url.split('/')[2] || '';
 
         if (!this.playlist) {
             this.filteredItems = [];
@@ -276,46 +214,6 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
         }
 
         this.filteredItems = items;
-
-        // Pré-carregar logos dos itens visíveis
-        this.preloadVisibleLogos();
-    }
-
-    /**
-     * Pré-carregar logos dos itens visíveis
-     */
-    private preloadVisibleLogos(): void {
-        if (!this.filteredItems.length) return;
-
-        // Coletar URLs dos primeiros 20 itens (primeira tela)
-        const visibleItems = this.filteredItems.slice(0, 20);
-        const logoUrls: string[] = [];
-
-        visibleItems.forEach(item => {
-            const imageUrl = this.getItemImageUrl(item);
-            if (imageUrl && this.isValidUrl(imageUrl)) {
-                logoUrls.push(imageUrl);
-            }
-        });
-
-        if (logoUrls.length > 0) {
-            // Pré-carregar em background
-            this.logoCacheService.preloadLogos(logoUrls, 3).catch(error => {
-                console.warn('Erro no pré-carregamento de logos visíveis:', error);
-            });
-        }
-    }
-
-    /**
-     * Validar se URL é válida
-     */
-    private isValidUrl(url: string): boolean {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
     }
 
     private getFavoriteItems(): (Channel | Movie | Series)[] {
@@ -447,22 +345,5 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
             default:
                 return 'inbox';
         }
-    }
-
-    /**
-     * Atualizar logo específico
-     */
-    refreshItemLogo(item: Channel | Movie | Series): void {
-        const imageUrl = this.getItemImageUrl(item);
-        if (imageUrl) {
-            this.appComponent.refreshLogo(imageUrl);
-        }
-    }
-
-    /**
-     * Obter estatísticas do cache (para debug)
-     */
-    getCacheStats(): any {
-        return this.logoCacheService.getCacheStats();
     }
 }
