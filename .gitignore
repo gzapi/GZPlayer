@@ -5,6 +5,8 @@
 /tmp
 /out-tsc
 /bazel-out
+/src/environments/environments.ts
+/src/environments/environments.prod.ts
 
 # Arquivos temporários
 /backend/src/cache

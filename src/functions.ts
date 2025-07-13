@@ -9,7 +9,7 @@ import { lastValueFrom } from 'rxjs';
 })
 export class Functions {
 
-    public readonly API_KEY = '6e8cf205716f657a024d60ffeb60edd6';
+    public readonly API_KEY = environment.API_KEY;
     public readonly BASE_URL = 'https://api.themoviedb.org/3';
     public readonly IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
