@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 
 import { environment } from './environments/environment';
@@ -8,6 +8,10 @@ import { lastValueFrom } from 'rxjs';
     providedIn: 'root'
 })
 export class Functions {
+
+    public readonly API_KEY = '6e8cf205716f657a024d60ffeb60edd6';
+    public readonly BASE_URL = 'https://api.themoviedb.org/3';
+    public readonly IMAGE_BASE_URL = 'https://image.tmdb.org/t/p/';
 
     constructor(
         private http: HttpClient
@@ -48,21 +52,20 @@ export class Functions {
         }
     }
 
-    async get(rota: string): Promise<{ success: boolean; message?: string; data?: any[] } | null> {
+    async get(url: string, page: number = 1, query: string = ''): Promise<{ data: any[] } | null> {
         try {
-            const token = sessionStorage.getItem('token');
-            let headers = new HttpHeaders();
-
-            if (token) {
-                headers = headers.set('Authorization', `Bearer ${token}`);
-            }
+            const params = new HttpParams()
+                .set('api_key', this.API_KEY)
+                .set('query', query)
+                .set('page', page.toString())
+                .set('language', 'pt-BR');
 
             const result = await lastValueFrom(
-                this.http.get<{ success: boolean; message?: string; data?: any[] }>(`${environment.API_URL}/${rota}`, { headers })
+                this.http.get<{ data: any[] }>(url, { params })
             );
 
-            if (!result.success) {
-                console.error('sendGetExpress retornou success: false.', result);
+            if (!result) {
+                console.error('get retornou success: false.', result);
             }
 
             return result;

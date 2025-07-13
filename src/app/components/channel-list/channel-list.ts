@@ -1,12 +1,12 @@
 import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil, filter } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 
 import { Channel, Movie, Series, M3UPlaylist } from '../../models/interfaces';
 import { FavoritesService } from '../../services/favorites';
@@ -36,7 +36,6 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     @Output() itemSelected = new EventEmitter<{item: Channel | Movie | Series, type: 'channel' | 'movie' | 'series'}>();
 
     filteredItems: (Channel | Movie | Series)[] = [];
-    loading = false;
     currentRoute = '';
     currentType  = '';
 
@@ -50,6 +49,8 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
     ) {}
 
     ngOnInit(): void {
+        this.appComponent.isLoading = true;
+
         // Detectar rota atual
         this.currentRoute = this.router.url.split('/')[1] || 'channels';
 
@@ -71,6 +72,10 @@ export class ChannelListComponent implements OnInit, OnDestroy, OnChanges {
 
         // Verificar se os dados estão disponíveis
         this.initializeData();
+    }
+
+    ngAfterViewInit(): void {
+        this.appComponent.isLoading = false;
     }
 
     private initializeData(): void {

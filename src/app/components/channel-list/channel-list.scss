@@ -32,6 +32,7 @@
 
 .item-card {
     cursor: pointer;
+    height: 450px;
     transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
@@ -49,7 +50,7 @@
 
     .item-image {
         position: relative;
-        height: 160px;
+        height: 450px;
         overflow: hidden;
         background: #f0f0f0;
 

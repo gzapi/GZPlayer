@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd, NavigationCancel, NavigationError, NavigationStart } from '@angular/router';
 import { FormBuilder, FormsModule } from '@angular/forms';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatSidenavModule } from '@angular/material/sidenav';
@@ -10,7 +10,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { Subject, takeUntil, filter, debounceTime, BehaviorSubject } from 'rxjs';
+import { Subject, takeUntil, filter, debounceTime, BehaviorSubject, tap } from 'rxjs';
 
 import { HeaderComponent } from './components/header/header';
 import { SidePanelComponent } from './components/side-panel/side-panel';
@@ -22,7 +22,6 @@ import { Channel, Movie, Series, M3UPlaylist } from './models/interfaces';
 import { Functions } from '../functions';
 import { environment } from '../environments/environment';
 import { AuthService } from './auth/auth.service';
-import { MatDialog } from '@angular/material/dialog';
 
 interface LoadStatus {
     type: 'success' | 'error' | 'warning';
@@ -79,7 +78,7 @@ export class AppComponent implements OnInit, OnDestroy {
     showInfoPanel = false;
     loading = false;
     loadStatus: LoadStatus | null = null;
-    
+
     // Dados agrupados com carregamento lazy
     groupedChannels: Record<string, Channel[]> = {};
     groupedMovies: Record<string, Movie[]> = {};
@@ -97,6 +96,7 @@ export class AppComponent implements OnInit, OnDestroy {
     showMovies: boolean = false;
     showSeries: boolean = false;
     routeTitle = '';
+    isLoading = false;
     currentView: 'channels' | 'movies' | 'series' | 'favorites' = 'channels';
 
     // Controle de performance e progresso
@@ -142,15 +142,16 @@ export class AppComponent implements OnInit, OnDestroy {
             .pipe(filter(event => event instanceof NavigationEnd))
             .subscribe(event => {
                 const nav = event as NavigationEnd;
-                if (nav.urlAfterRedirects !== '/login') {
-                    this.loadM3U({});
-                }
+                this.isLoading = false;
+                // Alterado para o ngOnInit. Remover daqui.
+                //this.loadM3U({});
             });
     }
 
     ngOnInit(): void {
         this.setupRouteListener();
         this.setupFavoritesListener();
+        this.loadM3U({});
 
         setTimeout(() => {
             this.expandMenu();

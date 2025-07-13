@@ -4,24 +4,25 @@
 
 <div class="channel-list-container">
     <!-- Loading State -->
-    <div class="loading-container" *ngIf="loading">
-        <mat-spinner diameter="40"></mat-spinner>
-        <p>Carregando...</p>
+    <div class="empty-state" *ngIf="appComponent.isLoading" style="background-color: tomato;">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Carregando informações...</p>
     </div>
 
     <!-- Empty State -->
-    <div class="empty-state" *ngIf="!loading && filteredItems.length === 0">
+    <div class="empty-state" *ngIf="!appComponent.isLoading && filteredItems.length === 0">
         <mat-icon>{{ getEmptyStateIcon() }}</mat-icon>
         <h3>{{ getEmptyStateTitle() }}</h3>
         <p>{{ getEmptyStateMessage() }}</p>
+        {{ appComponent.isLoading }}
     </div>
 
     <!-- Items Grid -->
-    <div class="items-grid" *ngIf="!loading && filteredItems.length > 0">
-        <mat-card class="item-card" *ngFor="let item of filteredItems; trackBy: trackByFn"(click)="onItemClick(item)">        
+    <div class="items-grid" *ngIf="!appComponent.isLoading && filteredItems.length > 0">
+        <mat-card class="item-card" *ngFor="let item of filteredItems; trackBy: trackByFn"(click)="onItemClick(item)">
             <!-- Item Image -->
             <div class="item-image">
-                <img [src]="getItemImage(item)" loading="lazy" [alt]="getItemTitle(item)" (error)="onImageError($event)">
+                <img [src]="getItemImage(item)" loading="lazy" [alt]="getItemTitle(item)" (error)="onImageError($event)" style="height: 400px !important;">
 
                 <!-- Favorite Button -->
                 <button mat-icon-button class="favorite-btn" [class.favorited]="isFavorite(item)" (click)="toggleFavorite(item, $event)" [title]="isFavorite(item) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">

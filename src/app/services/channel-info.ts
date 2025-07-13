@@ -107,9 +107,9 @@ export class ChannelInfoService {
         return this.tmdbService.enrichMovieData(movie.title).pipe(
             map(tmdbData => {
                 if (!tmdbData) {
-                return this.generateMockMovieInfo(movie);
+                    return this.generateMockMovieInfo(movie);
                 }
-                
+
                 return {
                     title: tmdbData.title,
                     overview: tmdbData.overview,
@@ -164,17 +164,13 @@ export class ChannelInfoService {
 
     // Método genérico para buscar informações baseado no tipo
     getItemInfo(item: Channel | Movie | Series): Observable<ChannelInfo | MovieInfo | SeriesInfo> {
-        if ('url' in item && item.url.includes('m3u8')) {
-            // É um canal
+        if (item.item_type === 'channel') {
             return this.getChannelInfo(item as Channel);
-        } else if ('duration' in item) {
-            // É um filme
+        } else if (item.item_type === 'movie') {
             return this.getMovieInfo(item as Movie);
-        } else if ('seasons' in item) {
-            // É uma série
+        } else if (item.item_type === 'series') {
             return this.getSeriesInfo(item as Series);
-        } else {
-            // Fallback para canal
+        } else  {
             return this.getChannelInfo(item as Channel);
         }
     }
@@ -194,9 +190,9 @@ export class ChannelInfoService {
     private generateMockMovieInfo(movie: Movie): MovieInfo {
         return {
             title: movie.title,
-            overview: 'Filme emocionante com uma história cativante que prende a atenção do público do início ao fim.',
+            overview: '',
             tvg_logo: movie.tvg_logo || '/assets/default.webp',
-            backdrop: 'https://via.placeholder.com/1280x720?text=' + encodeURIComponent(movie.title),
+            backdrop: '',
             releaseDate: '',
             rating: 0,
             voteCount: 0,

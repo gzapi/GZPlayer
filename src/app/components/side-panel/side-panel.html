@@ -1,8 +1,11 @@
 <div class="side-panel" *ngIf="item">
-    <div class="side-panel-header">
-        <h3>{{ getItemName() }}</h3>
-        <button mat-icon-button (click)="onClose()">
+    <div class="side-panel-header" style="padding: 10px;">
+        <button mat-mini-fab [color]="'warn'" (click)="onClose()">
             <mat-icon>close</mat-icon>
+        </button>
+
+        <button mat-mini-fab [color]="'warn'" (click)="toggleFavorite()" [title]="isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'" style="margin-left: 10px;">
+            <mat-icon>{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
         </button>
     </div>
 
@@ -10,7 +13,7 @@
         <!-- Canal -->
         <div *ngIf="isChannel() && getChannelInfo() as channelInfo" class="channel-info">
             <div class="channel-logo" *ngIf="getItemLogo()">
-                <img [src]="getItemLogo()" [alt]="getItemName()" (error)="onImageError($event)">
+                <img [src]="getItemLogo()" [alt]="getItemName()" (error)="onImageError($event)" class="imgInfo">
             </div>
 
             <!-- Programa Atual -->
@@ -71,10 +74,12 @@
             </mat-card>
         </div>
 
+
+
         <!-- Filme -->
         <div *ngIf="isMovie() && getMovieInfo() as movieInfo" class="movie-info">
             <div class="movie-poster" *ngIf="movieInfo.tvg_logo">
-                <img [src]="movieInfo.tvg_logo" [alt]="movieInfo.title" (error)="onImageError($event)">
+                <img [src]="movieInfo.tvg_logo" [alt]="movieInfo.title" (error)="onImageError($event)" class="imgInfo">
             </div>
 
             <mat-card class="movie-details">
@@ -108,10 +113,12 @@
             </mat-card>
         </div>
 
+
+
         <!-- Série -->
         <div *ngIf="isSeries() && getSeriesInfo() as seriesInfo" class="series-info">
             <div class="series-poster" *ngIf="seriesInfo.tvg_logo">
-                <img [src]="seriesInfo.tvg_logo" [alt]="seriesInfo.title" (error)="onImageError($event)">
+                <img [src]="seriesInfo.tvg_logo" [alt]="seriesInfo.title" (error)="onImageError($event)" class="imgInfo">
             </div>
 
             <mat-card class="series-details">
@@ -164,11 +171,4 @@
             <p>Carregando informações...</p>
         </div>
     </ng-template>
-
-    <!-- Botão de Favorito -->
-    <div class="side-panel-actions">
-        <button mat-fab [color]="isFavorite ? 'warn' : 'primary'" (click)="toggleFavorite()" [title]="isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'">
-            <mat-icon>{{ isFavorite ? 'favorite' : 'favorite_border' }}</mat-icon>
-        </button>
-    </div>
 </div>

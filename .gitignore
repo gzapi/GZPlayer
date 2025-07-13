@@ -9,6 +9,7 @@
 # Arquivos temporários
 /backend/src/cache
 /backend/src/temp
+/backend/.env
 
 # Node
 /node_modules

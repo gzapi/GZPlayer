@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -44,7 +44,8 @@ export class SidePanelComponent implements OnInit, OnDestroy, OnChanges {
     constructor(
         private channelInfoService: ChannelInfoService,
         private favoritesService: FavoritesService,
-        private epgService: EpgService
+        private epgService: EpgService,
+        private cdr: ChangeDetectorRef
     ) {}
 
     ngOnInit(): void {
@@ -66,17 +67,21 @@ export class SidePanelComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     private loadItemInfo(): void {
-        if (!this.item) return;
+        if (!this.item) {
+            return;
+        }
 
         this.loading = true;
         this.itemInfo = null;
 
-        this.channelInfoService.getItemInfo(this.item)
-            .pipe(takeUntil(this.destroy$))
+        this.channelInfoService.getItemInfo(this.item).pipe(
+                takeUntil(this.destroy$)
+            )
             .subscribe({
                 next: (info) => {
                     this.itemInfo = info;
                     this.loading = false;
+                    this.cdr.markForCheck();
                 },
                 error: (error) => {
                     console.error('Erro ao carregar informações:', error);

@@ -64,34 +64,11 @@
                     </a>
                 </nav>
             </div>
-
-            <!-- Load M3U Section -->
-            <div class="load-section">
-                <h3>CARREGAR LISTA</h3>
-
-                <!-- URL Input -->
-                <div class="url-input" style="width: 100% !important;">
-                    <div class="custom-form-field with-button" [class.dark-mode]="themeService.isDarkMode$ | async">
-                        <div class="input-wrapper">
-                            <input type="text" [(ngModel)]="m3uUrl" placeholder="URL da Lista M3U" [disabled]="loading"/>
-                            <button mat-icon-button class="icon-button" color="primary" [ngClass]="{ 'dark-button': themeService.isDarkMode$ | async }" (click)="loadM3U({})" [disabled]="loading || !m3uUrl.trim()" [title]="'Carregar lista M3U'">
-                                <mat-icon>{{ loading ? 'hourglass_empty' : 'download' }}</mat-icon>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Loading Indicator -->
-                <div class="loading-indicator" *ngIf="loading">
-                    <mat-progress-spinner diameter="30" mode="indeterminate"></mat-progress-spinner>
-                    <span>Carregando lista...</span>
-                </div>
-            </div>
         </div>
 
         <!-- Center Content -->
         <div class="content-area">
-            <div class="list-container">
+            <div class="list-container" *ngIf="!isLoading">
                 <router-outlet></router-outlet>
             </div>
         </div>
